@@ -7,7 +7,7 @@ task("read-random-number", "Reads the random number returned to a contract by Ch
 
         const contractAddr = taskArgs.contract
         const networkId = network.name
-        console.log("Reading data from VRF contract ", contractAddr, " on network ", networkId)
+        console.log("Reading data from VRF contract", contractAddr, "on network", networkId)
         const RandomNumberConsumer = await ethers.getContractFactory("RandomNumberConsumer")
 
         //Get signer information

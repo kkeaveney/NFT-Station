@@ -1,6 +1,6 @@
-
-//const { ethers } = require('hardhat')
 let { networkConfig, getNetworkIdFromName } = require('../helper-hardhat-config')
+
+
 
 task("fund-link", "Funds a contract with LINK")
     .addParam("contract", "The address of the contract that requires LINK")
@@ -8,11 +8,12 @@ task("fund-link", "Funds a contract with LINK")
     .setAction(async (taskArgs) => {
         const contractAddr = taskArgs.contract
         let networkId = await getNetworkIdFromName(network.name)
+        
         console.log("Funding contract", contractAddr, "on network",network.name)
         const LINK_TOKEN_ABI =  [{ "inputs": [{ "internalType": "address", "name": "recipient", "type": "address" }, { "internalType": "uint256", "name": "amount", "type": "uint256" }], "name": "transfer", "outputs": [{ "internalType": "bool", "name": "", "type": "bool" }], "stateMutability": "nonpayable", "type": "function" }]
         
         //set the LINK token contract address according to the environment
-        switch (network.name) {
+        switch (networkId) {
             case 'mainnet':
               linkContractAddr = '0x514910771af9ca656af840dff83e8264ecf986ca'
               break

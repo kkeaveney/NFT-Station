@@ -8,7 +8,7 @@ task("read-price-feed", "Gets the latest price from a Chainlink Price Feed")
         const networkId = network.name
 
         const PriceFeedConsumerContract = await ethers.getContractFactory("PriceConsumerV3")
-        console.log("Reading data from Price Feed consumer contract ", contractAddr, " on network ", networkId)
+        console.log("Reading data from Price Feed consumer contract", contractAddr, "on network", networkId)
 
         //Get signer information
         const accounts = await ethers.getSigners()

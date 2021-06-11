@@ -44,7 +44,7 @@ const networkConfig = {
 const getNetworkIdFromName = async (networkIdName) => {
     for (const id in networkConfig) {
         if (networkConfig[id]['name'] == networkIdName) {
-            return id
+            return id['name']
         }
     }
     return null

@@ -8,7 +8,7 @@ task("request-random-number", "Requests a random number for a Chainlink VRF enab
         const contractAddr = taskArgs.contract
         const seed = taskArgs.seed
         const networkId = network.name
-        console.log("Requesting a random number using VRF consumer contract ", contractAddr, " on network ", networkId)
+        console.log("Requesting a random number using VRF consumer contract", contractAddr, "on network", networkId)
         const RandomNumberConsumer = await ethers.getContractFactory("RandomNumberConsumer")
 
         //Get signer information
@@ -20,7 +20,7 @@ task("request-random-number", "Requests a random number for a Chainlink VRF enab
         var result = await vrfConsumerContract.getRandomNumber(seed).then(function (transaction) {
             console.log('Contract ', contractAddr, ' external data request successfully called. Transaction Hash: ', transaction.hash)
             console.log("Run the following to read the returned random number:")
-            console.log("npx hardhat read-random-number --contract " + contractAddr + " --network " + network.name)
+            console.log("npx hardhat read-random-number --contract " + contractAddr)
         })
 
     })
