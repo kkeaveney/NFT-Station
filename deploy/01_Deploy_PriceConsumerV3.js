@@ -23,7 +23,7 @@ module.exports = async ({
         log: true
     })
     log("Run Price Feed contract with command:")
-    log("npx hardhat read-price-feed --contract " + priceConsumerV3.address + " --network " + networkConfig[chainId]['name'])
+    log("npx hardhat read-price-feed --contract " + priceConsumerV3.address)
     log("----------------------------------------------------")
 }
 

@@ -7,7 +7,7 @@ task("request-data", "Calls an API Consumer Contract to request external data")
 
         const contractAddr = taskArgs.contract
         let networkId = await getNetworkIdFromName(network.name)
-        console.log("Calling API Consumer contract ", contractAddr, " on network ", network.name)
+        console.log("Calling API Consumer contract", contractAddr, "on network", network.name)
         const APIConsumer = await ethers.getContractFactory("APIConsumer")
 
         //Get signer information
@@ -19,7 +19,7 @@ task("request-data", "Calls an API Consumer Contract to request external data")
         var result = await apiConsumerContract.requestVolumeData().then(function (transaction) {
             console.log('Contract ', contractAddr, ' external data request successfully called. Transaction Hash: ', transaction.hash)
             console.log("Run the following to read the returned result:")
-            console.log("npx hardhat read-data --contract " + contractAddr + " --network " + network.name)
+            console.log("npx hardhat read-data --contract " + contractAddr)
         })
     })
 module.exports = {}

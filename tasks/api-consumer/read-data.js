@@ -7,7 +7,7 @@ task("read-data", "Calls an API Consumer Contract to read data obtained from an 
 
         const contractAddr = taskArgs.contract
         const networkId = network.name
-        console.log("Reading data from API Consumer contract ", contractAddr, " on network ", networkId)
+        console.log("Reading data from API Consumer contract", contractAddr, "on network ", networkId)
         const APIConsumer = await ethers.getContractFactory("APIConsumer")
 
         //Get signer information

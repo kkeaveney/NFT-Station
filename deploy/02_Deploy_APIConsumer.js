@@ -31,9 +31,9 @@ module.exports = async ({
   })
 
   log("Run the following command to fund contract with LINK:")
-  log("npx hardhat fund-link --contract " + apiConsumer.address + " --network " + networkConfig[chainId]['name'] + additionalMessage)
+  log("npx hardhat fund-link --contract " + apiConsumer.address + additionalMessage)
   log("Then run API Consumer contract with following command:")
-  log("npx hardhat request-data --contract " + apiConsumer.address + " --network " + networkConfig[chainId]['name'])
+  log("npx hardhat request-data --contract " + apiConsumer.address)
   log("----------------------------------------------------")
 }
 
