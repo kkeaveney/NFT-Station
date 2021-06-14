@@ -51,29 +51,22 @@ var result = await linkTokenContract.transfer(contractAddr, amount).then(functio
 let balance = await linkTokenContract.balanceOf(nftSimple.address)
 console.log("Amount of LINK tokens in the NFT contract:", ethers.utils.formatEther(balance))
 
-balance = await nftSimple.balanceOf()
-console.log("Amount of ETH in the NFT contract:", ethers.utils.formatEther(balance))
-
 // Check totalsupply of NFTs
 let totalSupply = await nftSimple.totalSupply()
-console.log('Total supply of NFTs', totalSupply.toNumber())
+console.log('Total supply of minted NFTs', totalSupply.toNumber())
 
 // Mint an NFT and send it to the deployer
 let nftNumber = totalSupply++ // id to mint
-console.log(nftNumber)
 await nftSimple.mint(deployer.address, nftNumber)
 
-
-
-// console.log('Number of NFTs owned by deployer', (await nftSimple.balanceOf(deployer.address)).toNumber())
+// Get tokenId of last minted NFT
+let tokenIndex = await nftSimple.tokenByIndex(nftNumber -1)
 
 // // Transfer NFT to another address
-// await nftSimple.transferFrom(deployer.address, receiver.address, nftNumber)
-// console.log('Number of NFTs owned by deployer', (await nftSimple.balanceOf(deployer.address)).toNumber())
-// console.log('Number of NFTs owned by receiver', (await nftSimple.balanceOf(receiver.address)).toNumber())
+await nftSimple.transferFrom(deployer.address, receiver.address, tokenIndex)
+console.log('Number of NFTs owned by deployer', (await nftSimple.balanceOf(deployer.address)).toNumber())
+console.log('Number of NFTs owned by receiver', (await nftSimple.balanceOf(receiver.address)).toNumber())
 }
-
-
 
 // Recommended pattern to be able to use async/await everywhere
 // and properly handle errors.
