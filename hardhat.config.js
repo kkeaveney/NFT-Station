@@ -20,13 +20,13 @@ require('dotenv').config()
 
 
 module.exports = {
-    defaultNetwork: "rinkeby",
+    defaultNetwork: "hardhat",
     networks: {
         hardhat: {
             // If you want to do some forking, uncomment this
-            forking: {
-              url: process.env.MAINNET_RPC_URL
-            }
+            // forking: {
+            //   url: process.env.MAINNET_RPC_URL
+            // }
         },
         localhost: {
         },

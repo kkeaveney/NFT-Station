@@ -30,12 +30,11 @@ async function main() {
 const accounts = await hre.ethers.getSigners()
 let [deployer, receiver] = accounts
 
-console.log("Deployer address:", deployer.address)
-console.log("Receiver address:", receiver.address)
-
 // Get contract to deploy
 const NFTSimple = await ethers.getContractFactory("NFTSimple");
 const nftSimple = new ethers.Contract(NFTSimple_ADDR, NFTSimple_Contract.abi, deployer)
+
+
 
 // Fund the contract with 1 LINK
 // npx hardhat fund-link --contract
@@ -46,6 +45,9 @@ const linkTokenContract = new ethers.Contract(LINK_TOKEN_ADDR, LINK_TOKEN_ABI, d
 var result = await linkTokenContract.transfer(contractAddr, amount).then(function (transaction) {
     console.log('Contract funded with 1 LINK. Transaction Hash:', transaction.hash)
 })
+
+console.log(nftSimple.address)
+console.log(linkTokenContract.address)
 
 // Check the balance of the contract
 let balance = await linkTokenContract.balanceOf(nftSimple.address)
