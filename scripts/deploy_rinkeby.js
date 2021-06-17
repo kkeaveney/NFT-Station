@@ -16,10 +16,8 @@ var sleep = require('sleep');
 const VRF_Coordinator_Addr='0xb3dCcb4Cf7a26f6cf6B120Cf5A73875B7BBc655B'
 const LINK_adr='0x01be23585060835e02b77ef475b0cc51aa1e0709'
 const keyhash='0x2ed0feb3e7fd2022120aa84fab1945545a9f2ffc9076fd6156fa96eaff4c1311'
-const NFTSimple_adr=JSON.parse(fs.readFileSync('deployments/rinkeby/NFTSimple.json', 'utf8'));
-const NFTSimple_Contract=JSON.parse(fs.readFileSync('artifacts/contracts/NFTSimple.sol/NFTSimple.json', 'utf8'));
-
-let accounts
+// const NFTSimple_adr=JSON.parse(fs.readFileSync('deployments/rinkeby/NFTSimple.json', 'utf8'));
+// const NFTSimple_Contract=JSON.parse(fs.readFileSync('artifacts/contracts/NFTSimple.sol/NFTSimple.json', 'utf8'));
 
 async function main() {
 
@@ -30,8 +28,11 @@ async function main() {
     await deployer.getAddress()
   );
     console.log("Account balance:", (await deployer.getBalance()).toString());
-    const nftSimple = new ethers.Contract(NFTSimple_adr.address, NFTSimple_Contract.abi, deployer)
-    
+    //const nftSimple = new ethers.Contract(NFTSimple_adr.address, NFTSimple_Contract.abi, deployer)
+
+    const NFTSimple = await ethers.getContractFactory("NFTSimple");
+    nftSimple = await NFTSimple.deploy()
+
     console.log("Deployer", deployer.address)
     console.log("N.F.T", nftSimple.address)
     console.log('VRF', VRF_Coordinator_Addr)
@@ -44,14 +45,16 @@ async function main() {
     // verify contracts
     // npx hardhat clean will clear `ENOENT: no such file or directory` error
 
-    // await hre.run("verify:verify", {
-    //     address: nftSimple.address,
-    //     constructorArguments: [],
-    // })
+    await hre.run("verify:verify", {
+        address: nftSimple.address,
+        constructorArguments: [],
+    })
 
-    
+
     // Mint NFTs
-    await nftSimple.batchMint(deployer.address, 2)
+    let tx = await nftSimple.batchMint(deployer.address, 6)
+    let receipt = await tx.wait()
+    
     let totalSupply = await nftSimple.totalSupply()
     console.log('NFT total supply', totalSupply.toString())
 
@@ -61,7 +64,9 @@ async function main() {
     console.log('tokenId owner', owner)
 
     // transfer NFT to reciever
-    await nftSimple._safeTransferFrom(deployer.address, receiver.address, tokenId, tokenId)
+    tx = await nftSimple._safeTransferFrom(deployer.address, receiver.address, tokenId, tokenId)
+    recipt = await tx.wait()
+    
     tokenId = await nftSimple.tokenOfOwnerByIndex(receiver.address, 0)
     let newOwner = await nftSimple.ownerOf(tokenId)
     console.log('tokenId owner after transfer', newOwner)
@@ -77,7 +82,7 @@ function saveFrontendFiles() {
       contractsDir + "/contract-address.json",
       JSON.stringify({ 
         MockLink: LINK_adr,
-        NFTSimple: NFTSimple_adr.address,
+        NFTSimple: nftSimple.address,
         VRFCoordinatorMock: VRF_Coordinator_Addr
         }, undefined, 2)
     );
