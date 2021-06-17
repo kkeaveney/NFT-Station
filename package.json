@@ -29,7 +29,8 @@
     "dotenv": "^8.2.0",
     "eslint": "^7.22.0",
     "file-system": "^2.2.2",
-    "transform": "^1.1.2"
+    "transform": "^1.1.2",
+    "sleep": "^6.3.0"
   },
   "mocha": {
     "timeout": 10000000

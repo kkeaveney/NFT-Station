@@ -1,6 +1,7 @@
 /**
  * @type import('hardhat/config').HardhatUserConfig
  */
+require('dotenv').config()
 require("@nomiclabs/hardhat-waffle")
 require("@nomiclabs/hardhat-ethers")
 require("@nomiclabs/hardhat-truffle5")
@@ -15,12 +16,13 @@ require("./tasks/price-consumer")
 require("./tasks/api-consumer")
 
 
-require('dotenv').config()
 // optional
 
 
+
 module.exports = {
-    defaultNetwork: "hardhat",
+    
+    defaultNetwork: "rinkeby",
     networks: {
         hardhat: {
             // If you want to do some forking, uncomment this
@@ -56,14 +58,14 @@ module.exports = {
     etherscan: {
         // Your API key for Etherscan
         // Obtain one at https://etherscan.io/
-        apiKey: process.env.ETHERSCAN_API_KEY
+        apiKey: process.env.ETHERSCAN_API
     },
     namedAccounts: {
         deployer: {
             default: 0, // here this will by default take the first account as deployer
             1: 0 // similarly on mainnet it will take the first account as deployer. Note though that depending on how hardhat network are configured, the account 0 on one network can be different than on another
         },
-        feeCollector: {
+        receiver: {
             default: 1
         }
     },

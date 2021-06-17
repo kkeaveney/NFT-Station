@@ -1,4 +1,3 @@
-const { UnicodeNormalizationForm } = require('@ethersproject/strings');
 var fs = require('file-system');
 // Require the Hardhat Runtime Environment explicitly here. This is optional 
 // but useful for running the script in a standalone fashion through `node <script>`.
@@ -13,7 +12,7 @@ const hre = require("hardhat")
 //VRF Details set for Rinkeby environment, can get other values at https://docs.chain.link/docs/vrf-contracts#config
 
 const LINK_TOKEN_ADDR="0x01BE23585060835E02B77ef475b0Cc51aA1e0709"
-const NFTSimple_ADDR="0x993dC0a907f33444ae5873c3bC159F9ab794A1b1"
+const NFTSimple_ADDR=JSON.parse(fs.readFileSync('deployments/rinkeby/NFTSimple.json', 'utf8'));
 const NFTSimple_Contract = JSON.parse(fs.readFileSync('artifacts/contracts/NFTSimple.sol/NFTSimple.json', 'utf8'));
 const VRF_COORDINATOR="0xb3dCcb4Cf7a26f6cf6B120Cf5A73875B7BBc655B"
 const VFT_FEE="100000000000000000"
@@ -31,14 +30,11 @@ const accounts = await hre.ethers.getSigners()
 let [deployer, receiver] = accounts
 
 // Get contract to deploy
-const NFTSimple = await ethers.getContractFactory("NFTSimple");
-const nftSimple = new ethers.Contract(NFTSimple_ADDR, NFTSimple_Contract.abi, deployer)
-
-
+const nftSimple = new ethers.Contract(NFTSimple_ADDR.address, NFTSimple_Contract.abi, deployer)
 
 // Fund the contract with 1 LINK
 // npx hardhat fund-link --contract
-let contractAddr = NFTSimple_ADDR
+let contractAddr = NFTSimple_ADDR.address
 const amount = web3.utils.toHex(1e18)
 
 const linkTokenContract = new ethers.Contract(LINK_TOKEN_ADDR, LINK_TOKEN_ABI, deployer)
