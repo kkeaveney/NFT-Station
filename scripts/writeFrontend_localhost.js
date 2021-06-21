@@ -50,7 +50,9 @@ async function main() {
     console.log('NFT contract Link balance', balance.toNumber())
 
     //mint NFT
-    await nftSimple.batchMint(deployer.address, 3) // tokenID = 0 to 9
+    let tx = await nftSimple.batchMint(deployer.address, 3) // tokenID = 0 to 9
+    let receipt = await tx.wait()
+    
     let totalSupply = await nftSimple.totalSupply()
     console.log('Total NFT supply',totalSupply.toNumber())
     // Get TokenId and confirm ownership

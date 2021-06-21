@@ -26,8 +26,8 @@ task("fund-link", "Funds a contract with LINK")
             case 'goerli':
               linkContractAddr = '0x326c977e6efc84e512bb9c30f76e30c160ed06fb'
               break
-            default: //default to kovan
-              linkContractAddr = '0xa36085F69e2889c224210F603D836748e7dC0088'
+            default: //default to rinkeby
+              linkContractAddr = '0x01BE23585060835E02B77ef475b0Cc51aA1e0709'
           }
 
         console.log('Link contract address',linkContractAddr)

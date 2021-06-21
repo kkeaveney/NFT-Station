@@ -15,6 +15,11 @@ contract APIConsumer is ChainlinkClient {
      * Oracle: 0x2f90A6D021db21e1B2A077c5a37B3C7E75D15b7e
      * Job ID: 29fa9aa13bf1468788b7cc4a500a45b8
      * Fee: 0.1 LINK
+
+     * Network: Rinkeby
+     * Oracle: 0x7AFe1118Ea78C1eae84ca8feE5C65Bc76CcF879e
+     * Job ID: 6d1bfe27e7034b1d87b5270556b17277
+     * Fee: 0.1 LINK
      */
     constructor(address _oracle, string memory _jobId, uint256 _fee, address _link) public {
         if (_link == address(0)) {

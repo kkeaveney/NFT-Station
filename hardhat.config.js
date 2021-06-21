@@ -15,11 +15,7 @@ require("./tasks/random-number-consumer")
 require("./tasks/price-consumer")
 require("./tasks/api-consumer")
 
-
 // optional
-
-
-
 module.exports = {
     
     defaultNetwork: "rinkeby",
