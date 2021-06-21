@@ -3,12 +3,14 @@ pragma solidity 0.6.6;
 
 import "@chainlink/contracts/src/v0.6/VRFConsumerBase.sol";
 contract RandomNumberConsumer is VRFConsumerBase {
+
+    bool isAble;
     
     bytes32 internal keyHash;
     uint256 internal fee;
     uint256 public randomResult;
     event RequestedRandomness(bytes32 requestId);
-    
+
     /**
      * Constructor inherits VRFConsumerBase
      * 

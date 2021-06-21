@@ -7,13 +7,14 @@ var fs = require('file-system');
 const { ethers } = require("hardhat")
 const hre = require("hardhat")
 
-
 //LINK Token address set to Rinkeby address. Can get other values at https://docs.chain.link/docs/link-token-contracts
 //VRF Details set for Rinkeby environment, can get other values at https://docs.chain.link/docs/vrf-contracts#config
 
-const LINK_TOKEN_ADDR="0x01BE23585060835E02B77ef475b0Cc51aA1e0709"
-const NFTSimple_ADDR=JSON.parse(fs.readFileSync('deployments/rinkeby/NFTSimple.json', 'utf8'));
-const NFTSimple_Contract = JSON.parse(fs.readFileSync('artifacts/contracts/NFTSimple.sol/NFTSimple.json', 'utf8'));
+const linkTokenAddress="0x01BE23585060835E02B77ef475b0Cc51aA1e0709"
+const NFTSimple=JSON.parse(fs.readFileSync('deployments/rinkeby/NFTSimple.json', 'utf8'));
+const RandomNumberConsumer=JSON.parse(fs.readFileSync('deployments/rinkeby/RandomNumberConsumer.json', 'utf8')); 
+
+
 const VRF_COORDINATOR="0xb3dCcb4Cf7a26f6cf6B120Cf5A73875B7BBc655B"
 const VFT_FEE="100000000000000000"
 const VFT_KEYHASH="0x2ed0feb3e7fd2022120aa84fab1945545a9f2ffc9076fd6156fa96eaff4c1311"
@@ -30,20 +31,23 @@ const accounts = await hre.ethers.getSigners()
 let [deployer, receiver] = accounts
 
 // Get contract to deploy
-const nftSimple = new ethers.Contract(NFTSimple_ADDR.address, NFTSimple_Contract.abi, deployer)
+const nftSimple = new ethers.Contract(NFTSimple.address, NFTSimple.abi, deployer)
+const randomNumberConsumer = new ethers.Contract(RandomNumberConsumer.address, RandomNumberConsumer.abi, deployer)
 
 // Fund the contract with 1 LINK
 // npx hardhat fund-link --contract
-let contractAddr = NFTSimple_ADDR.address
+let contractAddr = NFTSimple.address
 const amount = web3.utils.toHex(1e18)
 
-const linkTokenContract = new ethers.Contract(LINK_TOKEN_ADDR, LINK_TOKEN_ABI, deployer)
+const linkTokenContract = new ethers.Contract(linkTokenAddress, LINK_TOKEN_ABI, deployer)
 var result = await linkTokenContract.transfer(contractAddr, amount).then(function (transaction) {
     console.log('Contract funded with 1 LINK. Transaction Hash:', transaction.hash)
 })
 
-console.log(nftSimple.address)
-console.log(linkTokenContract.address)
+console.log('linkTokenContract address', linkTokenContract.address)
+console.log('nftSimple address',NFTSimple.address)
+console.log('randomNumberConsumer address',RandomNumberConsumer.address)
+
 
 // Check the balance of the contract
 let balance = await linkTokenContract.balanceOf(nftSimple.address)

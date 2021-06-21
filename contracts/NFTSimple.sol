@@ -7,6 +7,7 @@ import "hardhat/console.sol";
 
 contract NFTSimple is ERC721 {
     constructor() public ERC721("NFTSimple", "NFTS") {} 
+
     
     function mint(address to, uint256 tokenId) public {
         _mint(to, tokenId);

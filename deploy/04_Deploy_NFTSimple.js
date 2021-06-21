@@ -13,7 +13,7 @@ module.exports = async ({
         from: deployer,
         log: true
     })
-    log("nFTSimple deployed at" + nFTSimple.address )
+    log("simpleNFT deployed at" + nFTSimple.address )
     log("----------------------------------------------------")
 }
 
