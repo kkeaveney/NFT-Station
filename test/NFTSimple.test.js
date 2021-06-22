@@ -12,13 +12,11 @@ let deployer, receiver, nftSimple, link, vrfCoordinatorMock
       [deployer, receiver] = await ethers.getSigners()
       const MockLink = await ethers.getContractFactory("MockLink")
       const NFTSimple = await ethers.getContractFactory("NFTSimple")
-      //const VRFCoordinatorMock = await ethers.getContractFactory("VRFCoordinatorMock")
+      const VRFCoordinatorMock = await ethers.getContractFactory("VRFCoordinatorMock")
       link = await MockLink.deploy()
       nftSimple = await NFTSimple.deploy()
-      //vrfCoordinatorMock = await VRFCoordinatorMock.deploy(link.address)
-
-      
-  })
+      vrfCoordinatorMock = await VRFCoordinatorMock.deploy(link.address)
+    })
 
   it('should send link to the deployed contract', async () => {
     let amount = '2000000000000000000' // if this is a string it will overflow
