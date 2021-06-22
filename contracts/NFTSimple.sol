@@ -3,6 +3,7 @@
 pragma solidity ^0.6.0;
 
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
+import "@chainlink/contracts/src/v0.6/VRFConsumerBase.sol";
 import "hardhat/console.sol";
 
 contract NFTSimple is ERC721 {
@@ -14,7 +15,6 @@ contract NFTSimple is ERC721 {
     }
 
     function safeMint(address to, uint256 tokenId) public {
-        console.log('mint');
         _safeMint(to, tokenId);
     }
 
@@ -24,7 +24,6 @@ contract NFTSimple is ERC721 {
 
     // mint a batch of 10 tokens.
     function batchMint(address to, uint256 number) public{
-        console.log('batch');
         bytes32 previousBlockHash = blockhash(block.number-1);
         uint256 startId = uint256(keccak256(abi.encodePacked(previousBlockHash,msg.sender)));
         for(uint256 i=0;i<number;i++){

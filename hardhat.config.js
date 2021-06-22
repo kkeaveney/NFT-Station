@@ -18,7 +18,7 @@ require("./tasks/api-consumer")
 // optional
 module.exports = {
     
-    defaultNetwork: "rinkeby",
+    defaultNetwork: "hardhat",
     networks: {
         hardhat: {
             // If you want to do some forking, uncomment this
