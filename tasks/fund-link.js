@@ -8,10 +8,8 @@ task("fund-link", "Funds a contract with LINK")
     .setAction(async (taskArgs) => {
         const contractAddr = taskArgs.contract
         let networkId = await getNetworkIdFromName(network.name)
-        
         console.log("Funding contract", contractAddr, "on network",network.name)
         const LINK_TOKEN_ABI =  [{ "inputs": [{ "internalType": "address", "name": "recipient", "type": "address" }, { "internalType": "uint256", "name": "amount", "type": "uint256" }], "name": "transfer", "outputs": [{ "internalType": "bool", "name": "", "type": "bool" }], "stateMutability": "nonpayable", "type": "function" }]
-        
         //set the LINK token contract address according to the environment
         switch (networkId) {
             case 'mainnet':
