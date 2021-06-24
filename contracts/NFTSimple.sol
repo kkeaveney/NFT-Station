@@ -17,7 +17,6 @@ contract NFTSimple is VRFConsumerBase, ERC721 {
     mapping (bytes32 => string) public requestIdToTokenURI;
 
     event requestCollectible(bytes32 indexed requestId);
-    
     /**
      * Constructor inherits VRFConsumerBase
      *
@@ -27,16 +26,16 @@ contract NFTSimple is VRFConsumerBase, ERC721 {
      * Key Hash: 0x2ed0feb3e7fd2022120aa84fab1945545a9f2ffc9076fd6156fa96eaff4c1311
      */
 
-    constructor(address _VRFCoordinator, address _LinkToken, bytes32 _keyHash) public 
-    VRFConsumerBase(_VRFCoordinator, _LinkToken) 
+    constructor(address _VRFCoordinator, address _LinkToken, bytes32 _keyHash) public
+    VRFConsumerBase(_VRFCoordinator, _LinkToken)
     ERC721("NFT", "NFT")
     {
         VRFCoordinator = _VRFCoordinator;
         keyHash = _keyHash;
         fee = 0.1 * 10**18; // 0.1 LINK
-    } 
+    }
 
-    
+
     function mint(address to, uint256 tokenId) public {
         _mint(to, tokenId);
     }
@@ -50,7 +49,7 @@ contract NFTSimple is VRFConsumerBase, ERC721 {
     }
 
     // mint a batch of 10 tokens.
-    function batchMint(address to, uint256 number) 
+    function batchMint(address to, uint256 number)
     public {
         bytes32 previousBlockHash = blockhash(block.number-1);
         uint256 startId = uint256(keccak256(abi.encodePacked(previousBlockHash,msg.sender)));
@@ -67,14 +66,14 @@ contract NFTSimple is VRFConsumerBase, ERC721 {
         emit requestCollectible(requestId);
     }
 
-    function fulfillRandomness (bytes32 requestId, uint256 randomNumber) 
+    function fulfillRandomness (bytes32 requestId, uint256 randomNumber)
     internal override {
-        
+        console.log('Random', randomNumber);
     }
 
 
 
-    function setTokenURI(uint256 tokenId,  string memory _tokenURI) 
+    function setTokenURI(uint256 tokenId,  string memory _tokenURI)
     public {
         require(
             _isApprovedOrOwner(_msgSender(), tokenId),

@@ -17,7 +17,6 @@ require("./tasks/api-consumer")
 
 // optional
 module.exports = {
-    
     defaultNetwork: "hardhat",
     networks: {
         hardhat: {
