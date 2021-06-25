@@ -1,6 +1,6 @@
 const { expect } = require('chai')
 const { deployments, getChainId } = require('hardhat')
-const { networkConfig } = require('../helper-hardhat-config')
+const { networkConfig } = require('../../helper-hardhat-config')
 
 describe('PriceConsumer', async function () {
   // Price Feed Address, values can be obtained at https://docs.chain.link/docs/reference-contracts
