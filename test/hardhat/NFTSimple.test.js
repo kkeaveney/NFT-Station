@@ -1,10 +1,5 @@
 const fs = require('fs');
 const { expect } = require('chai')
-const { parseEther, parseUnits } = require("ethers/lib/utils");
-const { deployments } = require('hardhat');
-const { getContractFactory } = require('@nomiclabs/hardhat-ethers/types');
-
-
 
 
 describe('Price consumer', async function () {
@@ -54,18 +49,12 @@ describe('deployments', async () => {
     expect(nftNum).to.equal(0)
   })
 
-  // it('should transfer NFT to new owner', async () => {
-  //   tx = await nftSimple._safeTransferFrom(deployer.address, receiver.address, 0, 123)
-  //   receipt = await tx.wait()
-  //   expect(await nftSimple.ownerOf(0)).to.equal(receiver.address)
-  // })
-
   it('should test the result of the random number request', async () => {
     tx = await nftSimple._safeTransferFrom(deployer.address, receiver.address, 0, 123) // tokenId = 0
     receipt = await tx.wait()
     let requestId = receipt.events[1].topics[0]
     expect(await nftSimple.ownerOf(0)).to.equal(receiver.address)
-    //requestId = '0xcf26e3987ecc97c98a2bab30fc819312ced3c2aa354ea9dcbf6a63631e256be2'
+    requestId = '0xcf26e3987ecc97c98a2bab30fc819312ced3c2aa354ea9dcbf6a63631e256be2'
     await vrfCoordinatorMock.callBackWithRandomness(requestId, 123, nftSimple.address)
     expect(await nftSimple.randomResult()).to.equal(123)
   })

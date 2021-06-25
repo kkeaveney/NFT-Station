@@ -43,7 +43,7 @@ async function main() {
     randomNumberConsumer = new ethers.Contract(RandomNumberConsumer_adr.address, RandomNumberConsumer_Contract.abi, deployer)
     apiConsumer = new ethers.Contract(APIConsumer_adr.address, APIConsumer_Contract.abi, deployer)
     priceConsumer = new ethers.Contract(PriceConsumer_adr.address, PriceConsumer_Contract.abi, deployer)
-  
+
 
     console.log("Deployer", deployer.address)
     console.log("API Consumer", apiConsumer.address)
@@ -51,7 +51,7 @@ async function main() {
     console.log("NFT Simple", nftSimple.address)
     console.log('Random Number Consumer', randomNumberConsumer.address)
     console.log('VRF', vrfCoordinatorAddress)
-    
+
 
     saveFrontendFiles()
 
@@ -61,23 +61,22 @@ async function main() {
     // verify contracts
     //npx hardhat clean will clear `ENOENT: no such file or directory` error
 
-    await hre.run("verify:verify", {
-        address: nftSimple.address,
-        constructorArguments: [],
-    })
+    // await hre.run("verify:verify", {
+    //     address: nftSimple.address,
+    //     constructorArguments: [vrfCoordinatorAddress, linkTokenAddress, keyHash],
+    // })
 
     await hre.run("verify:verify" , {
         address: randomNumberConsumer.address,
         constructorArguments: [vrfCoordinatorAddress, linkTokenAddress, keyHash, fee]
     })
 
-    
+
 
 
     // Mint NFTs
     let tx = await nftSimple.batchMint(deployer.address, 6)
     let receipt = await tx.wait()
-    
     let totalSupply = await nftSimple.totalSupply()
     console.log('NFT total supply', totalSupply.toString())
 
@@ -89,7 +88,6 @@ async function main() {
     // transfer NFT to reciever
     tx = await nftSimple._safeTransferFrom(deployer.address, receiver.address, tokenId, tokenId)
     recipt = await tx.wait()
-    
     tokenId = await nftSimple.tokenOfOwnerByIndex(receiver.address, 0)
     let newOwner = await nftSimple.ownerOf(tokenId)
     console.log('tokenId owner after transfer', newOwner)
@@ -100,7 +98,7 @@ function saveFrontendFiles() {
     if (!fs.existsSync(contractsDir)) {
       fs.mkdirSync(contractsDir);
     }
-  
+
     fs.writeFileSync(
       contractsDir + "/contract-address.json",
       JSON.stringify({
@@ -108,25 +106,25 @@ function saveFrontendFiles() {
         NFTSimple: nftSimple.address,
         APIConsumer: apiConsumer.address,
         PriceConsumerV3: priceConsumer.address,
-        RandomNumberConsumer: randomNumberConsumer.address, 
+        RandomNumberConsumer: randomNumberConsumer.address,
         VRFCoordinatorMock: vrfCoordinatorAddress
         }, undefined, 2)
     );
-    
+
     const MockLinkArt = artifacts.readArtifactSync("MockLink");
     const NFTSimpleArt = artifacts.readArtifactSync("NFTSimple");
     const APIConsumer = artifacts.readArtifactSync("APIConsumer");
     const PriceConsumer = artifacts.readArtifactSync("PriceConsumerV3")
     const RandomNumberConsumerArt = artifacts.readArtifactSync("RandomNumberConsumer");
     const VRFCoordinatorMockArt = artifacts.readArtifactSync("VRFCoordinatorMock");
-    
+
     fs.writeFileSync(contractsDir + "/MockLink.json",JSON.stringify(MockLinkArt, null, 2));
     fs.writeFileSync(contractsDir + "/NFTSimple.json",JSON.stringify(NFTSimpleArt, null, 2));
     fs.writeFileSync(contractsDir + "/APIConsumer.json",JSON.stringify(APIConsumer, null, 2));
     fs.writeFileSync(contractsDir + "/PriceConsumer .json",JSON.stringify(PriceConsumer, null, 2));
     fs.writeFileSync(contractsDir + "/RandomNumberConsumer.json",JSON.stringify(RandomNumberConsumerArt, null, 2));
     fs.writeFileSync(contractsDir + "/VRFCoordinatorMock.json",JSON.stringify(VRFCoordinatorMockArt, null, 2));
-    
+
 }
 
 main()
