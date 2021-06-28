@@ -26,11 +26,15 @@ let linkTokenContract, randomNumberConsumer
         const accounts = await hre.ethers.getSigners()
         const [deployer] = accounts
         const amount = '2000000000000000000' // if this is a string it will overflow
+        const keyhash = "0x6c3699283bda56ad74f6b855546325b68d482e983852a7a82979cc4807b641f4"
+        const fee = '100000000000000000'
 
         it('deploys contracts', async() => {
             linkTokenContract = new ethers.Contract(LinkToken.address, LinkToken.abi, deployer)
             vrfCoordinator = new ethers.Contract(VRFCoordinator.address, VRFCoordinator.abi, deployer)
-            randomNumberConsumer = new ethers.Contract(RandomNumberConsumer.address, RandomNumberConsumer.abi, deployer)
+            //randomNumberConsumer = new ethers.Contract(RandomNumberConsumer.address, RandomNumberConsumer.abi, deployer)
+            const RandomNumberConsumer = await ethers.getContractFactory("RandomNumberConsumer")
+            randomNumberConsumer= await RandomNumberConsumer.deploy(vrfCoordinator.address, linkTokenAddress, keyhash, fee)
         })
 
         it('transfers LINK to RandomNumberConsumer contract', async() => {
@@ -40,20 +44,10 @@ let linkTokenContract, randomNumberConsumer
             expect(balance).to.not.equal(0)
         })
 
-        it('repsonsds the random number request', async() => {
-            tx = await randomNumberConsumer.getRandomNumber(123)
+        it('creates collectible', async() => {
+            //tx = await randomNumberConsumer.createCollectible("x",123)
+            tx = await randomNumberConsumer.getRandomNumber(123);
             let response = await tx.wait()
-            //console.log(response.events[3].data)
-            randomNumber = await randomNumberConsumer.randomResult()
-
-            expect(randomNumber).to.not.equal(0)
-            await sleep.sleep(30)
-
-            tx = await randomNumberConsumer.getRandomNumber(12343)
-            response = await tx.wait()
-
-            let newRandomNumber = await randomNumberConsumer.randomResult()
-            expect(randomNumber).to.not.equal(newRandomNumber)
         })
 })
 

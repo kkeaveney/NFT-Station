@@ -2,13 +2,23 @@
 pragma solidity 0.6.6;
 
 import "@chainlink/contracts/src/v0.6/VRFConsumerBase.sol";
-contract RandomNumberConsumer is VRFConsumerBase {
+import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
+
+contract RandomNumberConsumer is ERC721, VRFConsumerBase {
 
 
     bytes32 internal keyHash;
     uint256 internal fee;
     uint256 public randomResult;
-    event RequestedRandomness(bytes32 requestId);
+    uint256 public tokenCounter;
+    enum Breed {PUB, SHIB_INU, BRENARD}
+
+    mapping (bytes32 => address) public requestIdToSender;
+    mapping (bytes32 => string) public requestIdToTokenURI;
+    mapping (uint256 => Breed) public tokenIdToBreed;
+    mapping (bytes32 => uint256) public requestIdtoTokenId;
+
+    event RequestedCollectible(bytes32 indexed requestId);
 
     /**
      * Constructor inherits VRFConsumerBase
@@ -25,8 +35,9 @@ contract RandomNumberConsumer is VRFConsumerBase {
         VRFConsumerBase(
             _vrfCoordinator, // VRF Coordinator
             _link  // LINK Token
-        ) public
+        ) ERC721("Doggie", "Dog") public
     {
+        tokenCounter = 0;
         keyHash = _keyHash;
         fee = _fee;
     }
@@ -35,14 +46,27 @@ contract RandomNumberConsumer is VRFConsumerBase {
      */
     function getRandomNumber(uint256 userProvidedSeed) public returns (bytes32 requestId) {
         requestId = requestRandomness(keyHash, fee, userProvidedSeed);
-        emit RequestedRandomness(requestId);
+
+    }
+
+    function createCollectible(string memory tokenURI, uint256 userProvidedSeed) public returns (bytes32) {
+        bytes32 requestId = requestRandomness(keyHash, fee, userProvidedSeed);
+        requestIdToSender[requestId] = msg.sender;
+        requestIdToTokenURI[requestId] = tokenURI;
+        emit RequestedCollectible(requestId);
     }
 
     /**
      * Callback function used by VRF Coordinator
      */
-    function fulfillRandomness(bytes32 requestId, uint256 randomness) internal override {
-        randomResult = randomness;
+    function fulfillRandomness(bytes32 requestId, uint256 randomNumber) internal override {
+        // address dogOwner = requestIdToSender[requestId];
+        // string memory tokenURI = requestIdToTokenURI[requestId];
+        // uint256 newItemId = tokenCounter;
+        // _safeMint(dogOwner, newItemId);
+        // _setTokenURI(newItemId, tokenURI);
+        // Breed breed = Breed(randomNumber % 3);
+        // tokenIdToBreed[newItemId] = breed;
     }
     /**
      * Withdraw LINK from this contract
