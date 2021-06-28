@@ -23,8 +23,8 @@ const APIConsumer_adr=JSON.parse(fs.readFileSync('deployments/rinkeby/APIConsume
 const APIConsumer_Contract=JSON.parse(fs.readFileSync('artifacts/contracts/APIConsumer.sol/APIConsumer.json', 'utf8'));
 const PriceConsumer_adr=JSON.parse(fs.readFileSync('deployments/rinkeby/PriceConsumerV3.json', 'utf8'));
 const PriceConsumer_Contract=JSON.parse(fs.readFileSync('artifacts/contracts/PriceConsumerV3.sol/PriceConsumerV3.json', 'utf8'));
-
-let nftSimple, randomNumberConsumer, apiConsumer, priceConsumer
+const Link_Token_abi='[{"constant":true,"inputs":[],"name":"name","outputs":[{"name":"","type":"string"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"_spender","type":"address"},{"name":"_value","type":"uint256"}],"name":"approve","outputs":[{"name":"","type":"bool"}],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[],"name":"totalSupply","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"_from","type":"address"},{"name":"_to","type":"address"},{"name":"_value","type":"uint256"}],"name":"transferFrom","outputs":[{"name":"","type":"bool"}],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[],"name":"decimals","outputs":[{"name":"","type":"uint8"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"_to","type":"address"},{"name":"_value","type":"uint256"},{"name":"_data","type":"bytes"}],"name":"transferAndCall","outputs":[{"name":"success","type":"bool"}],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"name":"_spender","type":"address"},{"name":"_subtractedValue","type":"uint256"}],"name":"decreaseApproval","outputs":[{"name":"success","type":"bool"}],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[{"name":"_owner","type":"address"}],"name":"balanceOf","outputs":[{"name":"balance","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"symbol","outputs":[{"name":"","type":"string"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"_to","type":"address"},{"name":"_value","type":"uint256"}],"name":"transfer","outputs":[{"name":"success","type":"bool"}],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"name":"_spender","type":"address"},{"name":"_addedValue","type":"uint256"}],"name":"increaseApproval","outputs":[{"name":"success","type":"bool"}],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[{"name":"_owner","type":"address"},{"name":"_spender","type":"address"}],"name":"allowance","outputs":[{"name":"remaining","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"inputs":[],"payable":false,"stateMutability":"nonpayable","type":"constructor"},{"anonymous":false,"inputs":[{"indexed":true,"name":"from","type":"address"},{"indexed":true,"name":"to","type":"address"},{"indexed":false,"name":"value","type":"uint256"},{"indexed":false,"name":"data","type":"bytes"}],"name":"Transfer","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"name":"owner","type":"address"},{"indexed":true,"name":"spender","type":"address"},{"indexed":false,"name":"value","type":"uint256"}],"name":"Approval","type":"event"}]'
+let nftSimple, randomNumberConsumer, apiConsumer, priceConsumer, linkTokenContract
 
 async function main() {
 
@@ -36,6 +36,7 @@ async function main() {
   );
     nftSimple = new ethers.Contract(NFTSimple_adr.address, NFTSimple_Contract.abi, deployer)
 
+
     const chainId = await getChainId()
     const keyHash = networkConfig[chainId]['keyHash']
     const fee = networkConfig[chainId]['fee']
@@ -43,7 +44,7 @@ async function main() {
     randomNumberConsumer = new ethers.Contract(RandomNumberConsumer_adr.address, RandomNumberConsumer_Contract.abi, deployer)
     apiConsumer = new ethers.Contract(APIConsumer_adr.address, APIConsumer_Contract.abi, deployer)
     priceConsumer = new ethers.Contract(PriceConsumer_adr.address, PriceConsumer_Contract.abi, deployer)
-
+    linkTokenContract = new ethers.Contract(linkTokenAddress, Link_Token_abi, deployer)
 
     console.log("Deployer", deployer.address)
     console.log("API Consumer", apiConsumer.address)
@@ -72,11 +73,14 @@ async function main() {
     })
 
 
-
+    // Fund with LINK
+    const amount = web3.utils.toHex(1e18)
+    let tx = await linkTokenContract.transfer(randomNumberConsumer.address, amount)
+    let receipt = await tx.wait()
 
     // Mint NFTs
-    let tx = await nftSimple.batchMint(deployer.address, 6)
-    let receipt = await tx.wait()
+    tx = await nftSimple.batchMint(deployer.address, 6)
+    receipt = await tx.wait()
     let totalSupply = await nftSimple.totalSupply()
     console.log('NFT total supply', totalSupply.toString())
 

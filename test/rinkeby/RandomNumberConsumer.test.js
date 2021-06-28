@@ -40,10 +40,11 @@ let linkTokenContract, randomNumberConsumer
             expect(balance).to.not.equal(0)
         })
 
-        it('repsonsds the random number request', async() => {
-            tx = await randomNumberConsumer.getRandomNumber(123)
+        it('responds with the random number request', async() => {
+
+            tx = await randomNumberConsumer.getRandomNumber(1)
             let response = await tx.wait()
-            //console.log(response.events[3].data)
+            // console.log(response.events[3].data)
             randomNumber = await randomNumberConsumer.randomResult()
 
             expect(randomNumber).to.not.equal(0)
