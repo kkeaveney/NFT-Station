@@ -3,6 +3,7 @@ pragma solidity 0.6.6;
 
 import "@chainlink/contracts/src/v0.6/VRFConsumerBase.sol";
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
+import "hardhat/console.sol";
 
 contract RandomNumberConsumer is ERC721, VRFConsumerBase {
 
@@ -21,13 +22,14 @@ contract RandomNumberConsumer is ERC721, VRFConsumerBase {
     event RequestedCollectible(bytes32 indexed requestId);
 
     /**
-     * Constructor inherits VRFConsumerBase
-     *
-     * Network: Kovan
-     * Chainlink VRF Coordinator address: 0xdD3782915140c8f3b190B5D67eAc6dc5760C46E9
-     * LINK token address:                0xa36085F69e2889c224210F603D836748e7dC0088
-     * Key Hash: 0x6c3699283bda56ad74f6b855546325b68d482e983852a7a82979cc4807b641f4
-     */
+ * Constructor inherits VRFConsumerBase
+ *
+ * Network: Rinkeby
+ * Chainlink VRF Coordinator address: 0xb3dCcb4Cf7a26f6cf6B120Cf5A73875B7BBc655B
+ * LINK token address:                0x01be23585060835e02b77ef475b0cc51aa1e0709
+ * Key Hash: 0x2ed0feb3e7fd2022120aa84fab1945545a9f2ffc9076fd6156fa96eaff4c1311
+ */
+
     constructor(address _vrfCoordinator,
                 address _link,
                 bytes32 _keyHash,
@@ -49,8 +51,8 @@ contract RandomNumberConsumer is ERC721, VRFConsumerBase {
 
     }
 
-    function createCollectible(string memory tokenURI, uint256 userProvidedSeed) public returns (bytes32) {
-        bytes32 requestId = requestRandomness(keyHash, fee, userProvidedSeed);
+    function createCollectible(string memory tokenURI, uint256 userProvidedSeed) public returns (bytes32 requestId) {
+        requestId = requestRandomness(keyHash, fee, userProvidedSeed);
         requestIdToSender[requestId] = msg.sender;
         requestIdToTokenURI[requestId] = tokenURI;
         emit RequestedCollectible(requestId);
@@ -60,13 +62,13 @@ contract RandomNumberConsumer is ERC721, VRFConsumerBase {
      * Callback function used by VRF Coordinator
      */
     function fulfillRandomness(bytes32 requestId, uint256 randomNumber) internal override {
-        // address dogOwner = requestIdToSender[requestId];
-        // string memory tokenURI = requestIdToTokenURI[requestId];
-        // uint256 newItemId = tokenCounter;
-        // _safeMint(dogOwner, newItemId);
-        // _setTokenURI(newItemId, tokenURI);
-        // Breed breed = Breed(randomNumber % 3);
-        // tokenIdToBreed[newItemId] = breed;
+        address dogOwner = requestIdToSender[requestId];
+        string memory tokenURI = requestIdToTokenURI[requestId];
+        uint256 newItemId = tokenCounter;
+        _safeMint(dogOwner, newItemId);
+        _setTokenURI(newItemId, tokenURI);
+        Breed breed = Breed(randomNumber % 3);
+        tokenIdToBreed[newItemId] = breed;
     }
     /**
      * Withdraw LINK from this contract

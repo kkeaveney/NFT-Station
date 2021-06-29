@@ -34,7 +34,7 @@ async function main() {
     "Deploying the contracts with the account:",
     await deployer.getAddress()
   );
-    nftSimple = new ethers.Contract(NFTSimple_adr.address, NFTSimple_Contract.abi, deployer)
+
 
     const chainId = await getChainId()
     const keyHash = networkConfig[chainId]['keyHash']
@@ -43,9 +43,8 @@ async function main() {
     randomNumberConsumer = new ethers.Contract(RandomNumberConsumer_adr.address, RandomNumberConsumer_Contract.abi, deployer)
     apiConsumer = new ethers.Contract(APIConsumer_adr.address, APIConsumer_Contract.abi, deployer)
     priceConsumer = new ethers.Contract(PriceConsumer_adr.address, PriceConsumer_Contract.abi, deployer)
+    nftSimple = new ethers.Contract(NFTSimple_adr.address, NFTSimple_Contract.abi, deployer)
 
-
-    console.log("Deployer", deployer.address)
     console.log("API Consumer", apiConsumer.address)
     console.log("Price Consumer", priceConsumer.address)
     console.log("NFT Simple", nftSimple.address)
@@ -61,18 +60,15 @@ async function main() {
     // verify contracts
     //npx hardhat clean will clear `ENOENT: no such file or directory` error
 
-    // await hre.run("verify:verify", {
-    //     address: nftSimple.address,
-    //     constructorArguments: [vrfCoordinatorAddress, linkTokenAddress, keyHash],
-    // })
+    await hre.run("verify:verify", {
+        address: nftSimple.address,
+        constructorArguments: [vrfCoordinatorAddress, linkTokenAddress, keyHash, fee],
+    })
 
     await hre.run("verify:verify" , {
         address: randomNumberConsumer.address,
         constructorArguments: [vrfCoordinatorAddress, linkTokenAddress, keyHash, fee]
     })
-
-
-
 
     // Mint NFTs
     let tx = await nftSimple.batchMint(deployer.address, 6)
@@ -84,13 +80,6 @@ async function main() {
     let tokenId = await nftSimple.tokenOfOwnerByIndex(deployer.address, 0)
     let owner = await nftSimple.ownerOf(tokenId)
     console.log('tokenId owner', owner)
-
-    // transfer NFT to reciever
-    tx = await nftSimple._safeTransferFrom(deployer.address, receiver.address, tokenId, tokenId)
-    recipt = await tx.wait()
-    tokenId = await nftSimple.tokenOfOwnerByIndex(receiver.address, 0)
-    let newOwner = await nftSimple.ownerOf(tokenId)
-    console.log('tokenId owner after transfer', newOwner)
 }
 
 function saveFrontendFiles() {
