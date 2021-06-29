@@ -46,7 +46,7 @@ let linkTokenContract, randomNumberConsumer
             let response = await tx.wait()
             // console.log(response.events[3].data)
             randomNumber = await randomNumberConsumer.randomResult()
-
+            console.log('randomNumber', randomNumber.toString())
             expect(randomNumber).to.not.equal(0)
             await sleep.sleep(30)
 
