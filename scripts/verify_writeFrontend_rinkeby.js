@@ -19,12 +19,9 @@ const NFTSimple_adr=JSON.parse(fs.readFileSync('deployments/rinkeby/NFTSimple.js
 const NFTSimple_Contract=JSON.parse(fs.readFileSync('artifacts/contracts/NFTSimple.sol/NFTSimple.json', 'utf8'));
 const RandomNumberConsumer_adr=JSON.parse(fs.readFileSync('deployments/rinkeby/RandomNumberConsumer.json', 'utf8'));
 const RandomNumberConsumer_Contract=JSON.parse(fs.readFileSync('artifacts/contracts/RandomNumberConsumer.sol/RandomNumberConsumer.json', 'utf8'));
-const APIConsumer_adr=JSON.parse(fs.readFileSync('deployments/rinkeby/APIConsumer.json', 'utf8'));
-const APIConsumer_Contract=JSON.parse(fs.readFileSync('artifacts/contracts/APIConsumer.sol/APIConsumer.json', 'utf8'));
-const PriceConsumer_adr=JSON.parse(fs.readFileSync('deployments/rinkeby/PriceConsumerV3.json', 'utf8'));
-const PriceConsumer_Contract=JSON.parse(fs.readFileSync('artifacts/contracts/PriceConsumerV3.sol/PriceConsumerV3.json', 'utf8'));
 const Link_Token_abi='[{"constant":true,"inputs":[],"name":"name","outputs":[{"name":"","type":"string"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"_spender","type":"address"},{"name":"_value","type":"uint256"}],"name":"approve","outputs":[{"name":"","type":"bool"}],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[],"name":"totalSupply","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"_from","type":"address"},{"name":"_to","type":"address"},{"name":"_value","type":"uint256"}],"name":"transferFrom","outputs":[{"name":"","type":"bool"}],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[],"name":"decimals","outputs":[{"name":"","type":"uint8"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"_to","type":"address"},{"name":"_value","type":"uint256"},{"name":"_data","type":"bytes"}],"name":"transferAndCall","outputs":[{"name":"success","type":"bool"}],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"name":"_spender","type":"address"},{"name":"_subtractedValue","type":"uint256"}],"name":"decreaseApproval","outputs":[{"name":"success","type":"bool"}],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[{"name":"_owner","type":"address"}],"name":"balanceOf","outputs":[{"name":"balance","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"symbol","outputs":[{"name":"","type":"string"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"_to","type":"address"},{"name":"_value","type":"uint256"}],"name":"transfer","outputs":[{"name":"success","type":"bool"}],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"name":"_spender","type":"address"},{"name":"_addedValue","type":"uint256"}],"name":"increaseApproval","outputs":[{"name":"success","type":"bool"}],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[{"name":"_owner","type":"address"},{"name":"_spender","type":"address"}],"name":"allowance","outputs":[{"name":"remaining","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"inputs":[],"payable":false,"stateMutability":"nonpayable","type":"constructor"},{"anonymous":false,"inputs":[{"indexed":true,"name":"from","type":"address"},{"indexed":true,"name":"to","type":"address"},{"indexed":false,"name":"value","type":"uint256"},{"indexed":false,"name":"data","type":"bytes"}],"name":"Transfer","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"name":"owner","type":"address"},{"indexed":true,"name":"spender","type":"address"},{"indexed":false,"name":"value","type":"uint256"}],"name":"Approval","type":"event"}]'
-let nftSimple, randomNumberConsumer, apiConsumer, priceConsumer, linkTokenContract
+
+let nftSimple, randomNumberConsumer, linkTokenContract
 
 async function main() {
 
@@ -34,25 +31,18 @@ async function main() {
     "Deploying the contracts with the account:",
     await deployer.getAddress()
   );
-    nftSimple = new ethers.Contract(NFTSimple_adr.address, NFTSimple_Contract.abi, deployer)
-
-
     const chainId = await getChainId()
     const keyHash = networkConfig[chainId]['keyHash']
     const fee = networkConfig[chainId]['fee']
 
+    nftSimple = new ethers.Contract(NFTSimple_adr.address, NFTSimple_Contract.abi, deployer)
     randomNumberConsumer = new ethers.Contract(RandomNumberConsumer_adr.address, RandomNumberConsumer_Contract.abi, deployer)
-    apiConsumer = new ethers.Contract(APIConsumer_adr.address, APIConsumer_Contract.abi, deployer)
-    priceConsumer = new ethers.Contract(PriceConsumer_adr.address, PriceConsumer_Contract.abi, deployer)
     linkTokenContract = new ethers.Contract(linkTokenAddress, Link_Token_abi, deployer)
 
     console.log("Deployer", deployer.address)
-    console.log("API Consumer", apiConsumer.address)
-    console.log("Price Consumer", priceConsumer.address)
+    console.log("LINK", linkTokenContract.address)
     console.log("NFT Simple", nftSimple.address)
     console.log('Random Number Consumer', randomNumberConsumer.address)
-    console.log('VRF', vrfCoordinatorAddress)
-
 
     saveFrontendFiles()
 
@@ -62,20 +52,20 @@ async function main() {
     // verify contracts
     //npx hardhat clean will clear `ENOENT: no such file or directory` error
 
-    // await hre.run("verify:verify", {
-    //     address: nftSimple.address,
-    //     constructorArguments: [vrfCoordinatorAddress, linkTokenAddress, keyHash],
-    // })
-
-    await hre.run("verify:verify" , {
-        address: randomNumberConsumer.address,
-        constructorArguments: [vrfCoordinatorAddress, linkTokenAddress, keyHash, fee]
+    await hre.run("verify:verify", {
+        address: nftSimple.address,
+        constructorArguments: [vrfCoordinatorAddress, linkTokenAddress, keyHash, fee],
     })
+
+    // await hre.run("verify:verify" , {
+    //     address: randomNumberConsumer.address,
+    //     constructorArguments: [vrfCoordinatorAddress, linkTokenAddress, keyHash, fee]
+    // })
 
 
     // Fund with LINK
     const amount = web3.utils.toHex(1e18)
-    let tx = await linkTokenContract.transfer(randomNumberConsumer.address, amount)
+    let tx = await linkTokenContract.transfer(nftSimple.address, amount)
     let receipt = await tx.wait()
 
     // Mint NFTs
@@ -84,12 +74,12 @@ async function main() {
     let totalSupply = await nftSimple.totalSupply()
     console.log('NFT total supply', totalSupply.toString())
 
-    // Get owner of 1st NFT
+    // // Get owner of 1st NFT
     let tokenId = await nftSimple.tokenOfOwnerByIndex(deployer.address, 0)
     let owner = await nftSimple.ownerOf(tokenId)
     console.log('tokenId owner', owner)
 
-    // transfer NFT to reciever
+    // // transfer NFT to reciever
     tx = await nftSimple._safeTransferFrom(deployer.address, receiver.address, tokenId, tokenId)
     recipt = await tx.wait()
     tokenId = await nftSimple.tokenOfOwnerByIndex(receiver.address, 0)
@@ -108,8 +98,6 @@ function saveFrontendFiles() {
       JSON.stringify({
         MockLink: linkTokenAddress,
         NFTSimple: nftSimple.address,
-        APIConsumer: apiConsumer.address,
-        PriceConsumerV3: priceConsumer.address,
         RandomNumberConsumer: randomNumberConsumer.address,
         VRFCoordinatorMock: vrfCoordinatorAddress
         }, undefined, 2)
@@ -117,15 +105,11 @@ function saveFrontendFiles() {
 
     const MockLinkArt = artifacts.readArtifactSync("MockLink");
     const NFTSimpleArt = artifacts.readArtifactSync("NFTSimple");
-    const APIConsumer = artifacts.readArtifactSync("APIConsumer");
-    const PriceConsumer = artifacts.readArtifactSync("PriceConsumerV3")
     const RandomNumberConsumerArt = artifacts.readArtifactSync("RandomNumberConsumer");
     const VRFCoordinatorMockArt = artifacts.readArtifactSync("VRFCoordinatorMock");
 
     fs.writeFileSync(contractsDir + "/MockLink.json",JSON.stringify(MockLinkArt, null, 2));
     fs.writeFileSync(contractsDir + "/NFTSimple.json",JSON.stringify(NFTSimpleArt, null, 2));
-    fs.writeFileSync(contractsDir + "/APIConsumer.json",JSON.stringify(APIConsumer, null, 2));
-    fs.writeFileSync(contractsDir + "/PriceConsumer .json",JSON.stringify(PriceConsumer, null, 2));
     fs.writeFileSync(contractsDir + "/RandomNumberConsumer.json",JSON.stringify(RandomNumberConsumerArt, null, 2));
     fs.writeFileSync(contractsDir + "/VRFCoordinatorMock.json",JSON.stringify(VRFCoordinatorMockArt, null, 2));
 

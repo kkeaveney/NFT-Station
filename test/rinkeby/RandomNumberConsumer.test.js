@@ -11,14 +11,12 @@ var sleep = require('sleep');
  * Key Hash: 0x2ed0feb3e7fd2022120aa84fab1945545a9f2ffc9076fd6156fa96eaff4c1311
  */
 
-const linkTokenAddress="0x01BE23585060835E02B77ef475b0Cc51aA1e0709"
-
 const RandomNumberConsumer=JSON.parse(fs.readFileSync('deployments/rinkeby/RandomNumberConsumer.json', 'utf8'));
-const VRFCoordinator=JSON.parse(fs.readFileSync('deployments/rinkeby/VRFCoordinatorMock.json', 'utf8'));
-const vrfCoordinatorAddress="0xb3dCcb4Cf7a26f6cf6B120Cf5A73875B7BBc655B"
+const NFTSimple=JSON.parse(fs.readFileSync('deployments/rinkeby/NFTSimple.json', 'utf8'));
 const LinkToken=JSON.parse(fs.readFileSync('deployments/rinkeby/LinkToken.json', 'utf8'));
 
-let linkTokenContract, randomNumberConsumer
+
+let linkTokenContract, randomNumberConsumer, nftSimple
 
     describe('deployment', async () => {
 
@@ -29,32 +27,26 @@ let linkTokenContract, randomNumberConsumer
 
         it('deploys contracts', async() => {
             linkTokenContract = new ethers.Contract(LinkToken.address, LinkToken.abi, deployer)
-            vrfCoordinator = new ethers.Contract(VRFCoordinator.address, VRFCoordinator.abi, deployer)
             randomNumberConsumer = new ethers.Contract(RandomNumberConsumer.address, RandomNumberConsumer.abi, deployer)
+            nftSimple = new ethers.Contract(NFTSimple.address, NFTSimple.abi, deployer)
         })
 
         it('transfers LINK to RandomNumberConsumer contract', async() => {
             let tx = await linkTokenContract.transfer(randomNumberConsumer.address, amount)
             let res = await tx.wait()
-            let balance = await linkTokenContract.balanceOf(randomNumberConsumer.address)
+            tx = await linkTokenContract.transfer(nftSimple.address, amount)
+            res = await tx.wait()
+            let balance = await linkTokenContract.balanceOf(nftSimple.address)
             expect(balance).to.not.equal(0)
         })
 
         it('responds with the random number request', async() => {
+            let tx = await nftSimple.createCollectible('www.eerrtt.rrrrr',1)
+            let result = await tx.wait()
 
-            tx = await randomNumberConsumer.getRandomNumber(1)
-            let response = await tx.wait()
-            // console.log(response.events[3].data)
-            randomNumber = await randomNumberConsumer.randomResult()
+            randomNumber = await nftSimple.randomResult()
             console.log('randomNumber', randomNumber.toString())
             expect(randomNumber).to.not.equal(0)
-            await sleep.sleep(30)
-
-            tx = await randomNumberConsumer.getRandomNumber(12343)
-            response = await tx.wait()
-
-            let newRandomNumber = await randomNumberConsumer.randomResult()
-            expect(randomNumber).to.not.equal(newRandomNumber)
         })
 })
 
