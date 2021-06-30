@@ -26,16 +26,8 @@ module.exports = async ({
   const keyHash = networkConfig[chainId]['keyHash']
   const fee = networkConfig[chainId]['fee']
 
-  const linkToken = await deploy('LinkToken', {
-    from: deployer,
-    log: true
-  })
+  const linkToken = await deploy('LinkToken', { from: deployer, log: true })
 
-  const vrfCoordinatorMock = await deploy('VRFCoordinatorMock', {
-    from: deployer,
-    log: true,
-    args: [linkTokenAddress]
-  })
   const nftSimple = await deploy('NFTSimple', {
     from: deployer,
     args: [vrfCoordinatorAddress, linkTokenAddress, keyHash, fee],
@@ -44,7 +36,9 @@ module.exports = async ({
 
   log("Run the following command to fund contract with LINK:")
   log("npx hardhat fund-link --contract " + nftSimple.address + additionalMessage)
+  log("Then run NFTSimple contract with the following command, replacing '777' with your chosen seed number:")
+  log("npx hardhat request-random-number --contract " + nftSimple.address, " --seed '777'" )
   log("----------------------------------------------------")
 }
 
-module.exports.tags = ['all', 'NFTSimple']
+module.exports.tags = ['all', 'nftSimple']
