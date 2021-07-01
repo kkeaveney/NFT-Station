@@ -1,19 +1,23 @@
-
 pragma solidity 0.6.6;
 
 import "@chainlink/contracts/src/v0.6/VRFConsumerBase.sol";
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
+import "hardhat/console.sol";
 
 contract NFTSimple is VRFConsumerBase, ERC721 {
 
-
+    uint256 public tokenCounter;
     bytes32 internal keyHash;
     uint256 internal fee;
     uint256 public randomResult;
 
+    enum Breed{PUG, SHIB_INU, ST_BERNARD}
+
     mapping(bytes32 => address) public requestIdToSender;
     mapping(bytes32 => string) public requestIdToTokenURI;
-    
+    mapping(uint256 => Breed) public tokenIdToBreed;
+    mapping(bytes32 => uint256) public requestIdToTokenId;
+
     event RequestCollectible(bytes32 requestId);
 
     /**
@@ -34,6 +38,7 @@ contract NFTSimple is VRFConsumerBase, ERC721 {
     {
         keyHash = _keyHash;
         fee = _fee;
+        tokenCounter = 1;
     }
 
      // mint a batch of 10 tokens.
@@ -50,6 +55,7 @@ contract NFTSimple is VRFConsumerBase, ERC721 {
         safeTransferFrom(from, to, tokenId, data);
     }
 
+
     /**
      * Requests randomness from a user-provided seed
      */
@@ -65,6 +71,32 @@ contract NFTSimple is VRFConsumerBase, ERC721 {
      */
     function fulfillRandomness(bytes32 requestId, uint256 randomness) internal override {
         randomResult = randomness;
+        address dogOwner = requestIdToSender[requestId];
+        string memory tokenURI = requestIdToTokenURI[requestId];
+        uint256 newItemId = tokenCounter;
+        _safeMint(dogOwner, newItemId);
+        _setTokenURI(newItemId, tokenURI);
+        Breed breed = Breed(randomness % 3);
+        tokenIdToBreed[newItemId] = breed;
+        requestIdToTokenId[requestId] = newItemId;
+        tokenCounter = tokenCounter++;
+    }
+
+    function setTokenURI(uint256 tokenId, string memory _tokenURI) public {
+        require(
+            _isApprovedOrOwner(_msgSender(), tokenId),
+            "ERC721: transfer caller is not owner nor approved"
+        );
+        _setTokenURI(tokenId, _tokenURI);
+    }
+
+
+    function requestIdTransaction(bytes32 requestId) public view returns(address, string memory, uint256, Breed ){
+        address owner = requestIdToSender[requestId];
+        string memory tokenURI = requestIdToTokenURI[requestId];
+        uint256 tokenId = requestIdToTokenId[requestId];
+        Breed breed = Breed(tokenIdToBreed[1]);
+        return (owner, tokenURI, tokenId, breed);
     }
     /**
      * Withdraw LINK from this contract
