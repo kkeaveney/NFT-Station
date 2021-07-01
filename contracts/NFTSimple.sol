@@ -9,7 +9,7 @@ contract NFTSimple is VRFConsumerBase, ERC721 {
     uint256 public tokenCounter;
     bytes32 internal keyHash;
     uint256 internal fee;
-    uint256 public randomResult;
+
 
     enum Breed{PUG, SHIB_INU, ST_BERNARD}
 
@@ -38,23 +38,25 @@ contract NFTSimple is VRFConsumerBase, ERC721 {
     {
         keyHash = _keyHash;
         fee = _fee;
-        tokenCounter = 1;
+        tokenCounter = 0;
     }
 
-     // mint a batch of 10 tokens.
-    function batchMint(address to, uint256 number)
+     // mint a batch of x tokens.
+    function batchMint(address to, uint256 number, string memory tokenURI,uint256 userProvidedSeed)
     public {
         bytes32 previousBlockHash = blockhash(block.number-1);
         uint256 startId = uint256(keccak256(abi.encodePacked(previousBlockHash,msg.sender)));
         for(uint256 i=0;i<number;i++){
+
+            createCollectible(tokenURI, userProvidedSeed+i);
             _safeMint(to,startId+i);
+            _setTokenURI(startId+i, tokenURI);
         }
     }
 
     function _safeTransferFrom(address from, address to, uint256 tokenId, bytes memory data) public {
         safeTransferFrom(from, to, tokenId, data);
     }
-
 
     /**
      * Requests randomness from a user-provided seed
@@ -70,12 +72,11 @@ contract NFTSimple is VRFConsumerBase, ERC721 {
      * Callback function used by VRF Coordinator
      */
     function fulfillRandomness(bytes32 requestId, uint256 randomness) internal override {
-        randomResult = randomness;
         address dogOwner = requestIdToSender[requestId];
         string memory tokenURI = requestIdToTokenURI[requestId];
         uint256 newItemId = tokenCounter;
-        _safeMint(dogOwner, newItemId);
-        _setTokenURI(newItemId, tokenURI);
+        // _safeMint(dogOwner, newItemId);
+        // _setTokenURI(newItemId, tokenURI);
         Breed breed = Breed(randomness % 3);
         tokenIdToBreed[newItemId] = breed;
         requestIdToTokenId[requestId] = newItemId;
@@ -95,7 +96,7 @@ contract NFTSimple is VRFConsumerBase, ERC721 {
         address owner = requestIdToSender[requestId];
         string memory tokenURI = requestIdToTokenURI[requestId];
         uint256 tokenId = requestIdToTokenId[requestId];
-        Breed breed = Breed(tokenIdToBreed[1]);
+        Breed breed = Breed(tokenIdToBreed[0]);
         return (owner, tokenURI, tokenId, breed);
     }
     /**

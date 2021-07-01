@@ -7,7 +7,7 @@ const hre = require("hardhat");
 const { expect } = require('chai');
 
 
-let nftSimple, linkToken, vrfCoordinatorMock, accounts, deployer
+let nftSimple, vrfCoordinatorMock, accounts, deployer, tokenURI
 
 describe('deployments', async () => {
 
@@ -18,6 +18,7 @@ describe('deployments', async () => {
       const MockLink = await ethers.getContractFactory("MockLink")
       const NFTSimple = await ethers.getContractFactory("NFTSimple");
       const VRFCoordinatorMock = await ethers.getContractFactory("VRFCoordinatorMock")
+      tokenURI = 'www.world.com'
       // fee = '1000000000000000000'
       seed = 123
       link = await MockLink.deploy()
@@ -41,7 +42,8 @@ describe('deployments', async () => {
   })
 
    it('should batch mint from 10 to 19, check balances', async () => {
-    await nftSimple.batchMint(deployer.address, 10)
+
+    await nftSimple.batchMint(deployer.address, 10, tokenURI, 123)
     let nftNum = (await nftSimple.balanceOf(deployer.address)).toNumber()
     expect(nftNum).to.equal(10)
     nftNum = (await nftSimple.balanceOf(receiver.address)).toNumber()
@@ -65,14 +67,16 @@ describe('deployments', async () => {
     await vrfCoordinatorMock.callBackWithRandomness(requestId, randNum, nftSimple.address)
 
     let sender = await nftSimple.requestIdTransaction(requestId)
-    expect(sender[0]).to.equal(deployer.address)
-    expect(sender[1]).to.equal(tokenURI)
-    expect(sender[2]).to.equal(tokenId)
-    expect(sender[3]).to.equal(2) // randNum % 3
+       expect(sender[0]).to.equal(deployer.address)
+       expect(sender[1]).to.equal(tokenURI)
+       expect(sender[2]).to.equal(tokenId)
+       expect(sender[3]).to.equal(2) // randNum % 3
 
     // confirm NFT contract is up to date
     nftNum = (await nftSimple.balanceOf(deployer.address)).toNumber()
-    expect(nftNum).to.equal(11)
+    expect(nftNum).to.equal(10)
+    id = await nftSimple.tokenByIndex(0)
+    console.log(id.toString())
 })
 
 
