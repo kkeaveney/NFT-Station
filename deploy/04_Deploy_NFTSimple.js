@@ -26,7 +26,7 @@ module.exports = async ({
   const keyHash = networkConfig[chainId]['keyHash']
   const fee = networkConfig[chainId]['fee']
 
-  const linkToken = await deploy('LinkToken', { from: deployer, log: true })
+  //const linkToken = await deploy('LinkToken', { from: deployer, log: true })
 
   const nftSimple = await deploy('NFTSimple', {
     from: deployer,
