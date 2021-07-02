@@ -69,22 +69,22 @@ async function main() {
     let receipt = await tx.wait()
 
     // Mint NFTs
-    tx = await nftSimple.batchMint(deployer.address, 6)
-    receipt = await tx.wait()
-    let totalSupply = await nftSimple.totalSupply()
-    console.log('NFT total supply', totalSupply.toString())
+    // tx = await nftSimple.batchMint(deployer.address, 1, 'www.win.com', 123)
+    // receipt = await tx.wait()
+    // let totalSupply = await nftSimple.totalSupply()
+    // console.log('NFT total supply', totalSupply.toString())
 
-    // // Get owner of 1st NFT
-    let tokenId = await nftSimple.tokenOfOwnerByIndex(deployer.address, 0)
-    let owner = await nftSimple.ownerOf(tokenId)
-    console.log('tokenId owner', owner)
+    // // // Get owner of 1st NFT
+    // let tokenId = await nftSimple.tokenOfOwnerByIndex(deployer.address, 0)
+    // let owner = await nftSimple.ownerOf(tokenId)
+    // console.log('tokenId owner', owner)
 
-    // // transfer NFT to reciever
-    tx = await nftSimple._safeTransferFrom(deployer.address, receiver.address, tokenId, tokenId)
-    recipt = await tx.wait()
-    tokenId = await nftSimple.tokenOfOwnerByIndex(receiver.address, 0)
-    let newOwner = await nftSimple.ownerOf(tokenId)
-    console.log('tokenId owner after transfer', newOwner)
+    // // // transfer NFT to reciever
+    // tx = await nftSimple._safeTransferFrom(deployer.address, receiver.address, tokenId, tokenId)
+    // recipt = await tx.wait()
+    // tokenId = await nftSimple.tokenOfOwnerByIndex(receiver.address, 0)
+    // let newOwner = await nftSimple.ownerOf(tokenId)
+    // console.log('tokenId owner after transfer', newOwner)
 }
 
 function saveFrontendFiles() {
