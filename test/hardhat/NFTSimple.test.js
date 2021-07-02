@@ -11,7 +11,7 @@ let nftSimple, vrfCoordinatorMock, accounts, deployer, tokenURI
 
 describe('deployments', async () => {
 
-  it('deploy contracts and set variables', async () => {
+  it('deploy contracts', async () => {
       const chainId = await getChainId()
       const keyhash = networkConfig[chainId]['keyHash']
       const fee = networkConfig[chainId]['fee']
@@ -41,9 +41,8 @@ describe('deployments', async () => {
       console.log("Amount of LINK tokens in the contract:", ethers.utils.formatEther(balance));
   })
 
-   it('should batch mint from 10 to 19, check balances', async () => {
-
-    await nftSimple.batchMint(deployer.address, 10, tokenURI, 123)
+   it('should batch mint from 0 to 9, check balances', async () => {
+      await nftSimple.batchMint(deployer.address, 10, tokenURI, 123)
     let nftNum = (await nftSimple.balanceOf(deployer.address)).toNumber()
     expect(nftNum).to.equal(10)
     nftNum = (await nftSimple.balanceOf(receiver.address)).toNumber()
@@ -58,7 +57,7 @@ describe('deployments', async () => {
     let tokenURI = 'www.world.com'
     let randNum = 5 // % 3 should return a Breed of 2, SHIBA_INU
     let requestId
-    let tx = await nftSimple.createCollectible(tokenURI, randNum)
+    let tx = await nftSimple.batchMint(deployer.address, 1, tokenURI, 123)
     let request  = await tx.wait().then((transaction) => {
       requestId = transaction.events[3].args.requestId
     })
@@ -74,10 +73,7 @@ describe('deployments', async () => {
 
     // confirm NFT contract is up to date
     nftNum = (await nftSimple.balanceOf(deployer.address)).toNumber()
-    expect(nftNum).to.equal(10)
-    id = await nftSimple.tokenByIndex(0)
-    console.log(id.toString())
-})
-
-
+    expect(nftNum).to.equal(11)
+    id = await nftSimple.tokenByIndex(10)
+  })
 })
