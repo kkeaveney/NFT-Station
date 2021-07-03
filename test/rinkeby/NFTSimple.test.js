@@ -1,7 +1,7 @@
 const fs = require('fs');
 const { expect } = require('chai');
 var sleep = require('sleep');
-const ethers = require('ethers');
+const { ethers, waffle } = require('ethers');
 
 
 /**
@@ -25,16 +25,13 @@ describe('deployments', async () => {
   const accounts = await hre.ethers.getSigners()
   const [deployer, receiver ] = accounts
   const amount = '2000000000000000000';// if this is a string it will overflow
-  const tokenURI = "www.world.com"
+  const tokenURI = "www.BigShaq.com"
 
   it('deploy contracts', async () => {
 
     linkToken = new ethers.Contract(Linkaddress, LinkToken.abi, deployer)
     nftSimple = new ethers.Contract(NFTSimple.address, NFTSimple.abi, deployer)
-
-    console.log("Link",linkToken.address);
-    console.log("NFTSimple", nftSimple.address);
-    })
+  })
 
   it('should send link to the deployed contract', async () => {
     let tx = await linkToken.transfer(nftSimple.address, amount)
@@ -44,24 +41,12 @@ describe('deployments', async () => {
     console.log("Amount of LINK tokens in the contract:", ethers.utils.formatEther(balance));
   })
 
-   it('should batch mint, check balances', async () => {
-    let userSeed = await nftSimple.totalSupply()
-    userSeed++
-    await nftSimple.batchMint(deployer.address, 10, tokenURI, 766555)
-    let nftNum = (await nftSimple.balanceOf(deployer.address)).toNumber()
-    expect(nftNum).to.not.equal(0)
-    nftNum = (await nftSimple.balanceOf(receiver.address)).toNumber()
-    expect(nftNum).to.equal(0)
-    // // confirm tokenId owner
-    let tokenId = await nftSimple.tokenByIndex(0)
-    expect (await nftSimple.tokenOfOwnerByIndex(deployer.address, 0)).to.equal(tokenId)
-  })
-
-  it('should create a collectible', async () => {
+  it('should create a batch of collectibles', async () => {
     tokenId = await nftSimple.tokenCounter()
+    tokenId=tokenId++ // For userseed
     let requestId
 
-    let tx = await nftSimple.batchMint(deployer.address, 1, tokenURI, 123)
+    let tx = await nftSimple.batchMint(deployer.address, 10, tokenURI, tokenId)
     let request  = await tx.wait().then((transaction) => {
     })
 
