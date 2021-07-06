@@ -46,7 +46,7 @@ describe('deployments', async () => {
     seed=seed++ // For userseed
     let requestId
 
-    // let tx = await nftSimple.createCollectible(tokenURI, seed)
+    // let tx = await nftSimple.batchMint(deployer.address, 3, tokenURI, seed)
     // let request  = await tx.wait().then((transaction) => {
     // })
 
@@ -54,9 +54,10 @@ describe('deployments', async () => {
     let events = await nftSimple.queryFilter(eventFilter)
     let event = events[events.length - 1]
     requestId = event.args.requestId
-    //console.log(events)
+    console.log(events)
 
     let tokenId = await nftSimple.requestIdToTokenId(requestId)
+    console.log('tokenId', tokenId.toString())
 
     // Test the result of the random number request
     let sender = await nftSimple.requestIdTransaction(requestId)
@@ -66,7 +67,7 @@ describe('deployments', async () => {
        expect(sender[3]).to.be.lessThan(3) // Returned randomness
        console.log(sender)
        console.log('request ID', requestId)
-       console.log('tokenId', tokenId.toString())
+
 
     // // confirm NFT contract is up to date
   })
