@@ -49,8 +49,8 @@ contract NFTSimple is VRFConsumerBase, ERC721 {
         for(uint256 i=0;i<number;i++){
 
             createCollectible(tokenURI, userProvidedSeed+i);
-            _safeMint(to,startId+i);
-            _setTokenURI(startId+i, tokenURI);
+            // _safeMint(to,startId+i);
+            // _setTokenURI(startId+i, tokenURI);
         }
     }
 
@@ -74,9 +74,13 @@ contract NFTSimple is VRFConsumerBase, ERC721 {
     function fulfillRandomness(bytes32 requestId, uint256 randomness) internal override {
         address dogOwner = requestIdToSender[requestId];
         string memory tokenURI = requestIdToTokenURI[requestId];
-        uint256 newItemId = tokenCounter;
-        // _safeMint(dogOwner, newItemId);
-        // _setTokenURI(newItemId, tokenURI);
+        //uint256 newItemId = tokenCounter;
+        bytes32 previousBlockHash = blockhash(block.number-1);
+        uint256 newItemId = uint256(keccak256(abi.encodePacked(previousBlockHash,msg.sender)));
+
+        _safeMint(dogOwner, newItemId);
+        _setTokenURI(newItemId, tokenURI);
+
         Breed breed = Breed(randomness % 3);
         tokenIdToBreed[newItemId] = breed;
         requestIdToTokenId[requestId] = newItemId;
@@ -96,7 +100,7 @@ contract NFTSimple is VRFConsumerBase, ERC721 {
         address owner = requestIdToSender[requestId];
         string memory tokenURI = requestIdToTokenURI[requestId];
         uint256 tokenId = requestIdToTokenId[requestId];
-        Breed breed = Breed(tokenIdToBreed[0]);
+        Breed breed = Breed(tokenIdToBreed[tokenId]);
         return (owner, tokenURI, tokenId, breed);
     }
     /**

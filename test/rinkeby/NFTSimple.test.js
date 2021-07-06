@@ -25,7 +25,7 @@ describe('deployments', async () => {
   const accounts = await hre.ethers.getSigners()
   const [deployer, receiver ] = accounts
   const amount = '2000000000000000000';// if this is a string it will overflow
-  const tokenURI = "www.BigShaq.com"
+  const tokenURI = "www.WWW.com"
 
   it('deploy contracts', async () => {
 
@@ -33,39 +33,41 @@ describe('deployments', async () => {
     nftSimple = new ethers.Contract(NFTSimple.address, NFTSimple.abi, deployer)
   })
 
-  it('should send link to the deployed contract', async () => {
-    let tx = await linkToken.transfer(nftSimple.address, amount)
-    let result = tx.wait()
-    let balance = await linkToken.balanceOf(nftSimple.address)
-    expect(balance).to.not.equal(0)
-    console.log("Amount of LINK tokens in the contract:", ethers.utils.formatEther(balance));
-  })
+  // it('should send link to the deployed contract', async () => {
+  //   let tx = await linkToken.transfer(nftSimple.address, amount)
+  //   let result = tx.wait()
+  //   let balance = await linkToken.balanceOf(nftSimple.address)
+  //   expect(balance).to.not.equal(0)
+  //   console.log("Amount of LINK tokens in the contract:", ethers.utils.formatEther(balance));
+  // })
 
   it('should create a batch of collectibles', async () => {
-    tokenId = await nftSimple.tokenCounter()
-    tokenId=tokenId++ // For userseed
+    let seed = await nftSimple.tokenCounter()
+    seed=seed++ // For userseed
     let requestId
 
-    let tx = await nftSimple.batchMint(deployer.address, 10, tokenURI, tokenId)
-    let request  = await tx.wait().then((transaction) => {
-    })
+    // let tx = await nftSimple.createCollectible(tokenURI, seed)
+    // let request  = await tx.wait().then((transaction) => {
+    // })
 
     let eventFilter = nftSimple.filters.RequestCollectible()
     let events = await nftSimple.queryFilter(eventFilter)
     let event = events[events.length - 1]
     requestId = event.args.requestId
+    //console.log(events)
+
+    let tokenId = await nftSimple.requestIdToTokenId(requestId)
 
     // Test the result of the random number request
     let sender = await nftSimple.requestIdTransaction(requestId)
        expect(sender[0]).to.equal(deployer.address)
        expect(sender[1]).to.equal(tokenURI)
-       expect(sender[2]).to.equal(tokenId)
+       expect(sender[2]).to.equal(tokenId.toString())
        expect(sender[3]).to.be.lessThan(3) // Returned randomness
        console.log(sender)
+       console.log('request ID', requestId)
+       console.log('tokenId', tokenId.toString())
 
     // // confirm NFT contract is up to date
-    //nftNum = (await nftSimple.balanceOf(deployer.address)).toNumber()
-    //console.log('Deployer owns', nftNum.toString())
-    //id = await nftSimple.tokenByIndex(10)
   })
 })
