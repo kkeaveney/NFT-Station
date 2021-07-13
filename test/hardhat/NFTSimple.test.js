@@ -42,7 +42,7 @@ describe('deployments', async () => {
   })
 
    it('should batch mint from 0 to 9, check balances', async () => {
-    await nftSimple.batchMint(deployer.address, tokenURI, 10, 123)
+    await nftSimple.batchMint(deployer.address, 10, tokenURI, 123)
     let nftNum = (await nftSimple.balanceOf(deployer.address)).toNumber()
     expect(nftNum).to.equal(10)
     nftNum = (await nftSimple.balanceOf(receiver.address)).toNumber()
@@ -52,29 +52,27 @@ describe('deployments', async () => {
     expect (await nftSimple.tokenOfOwnerByIndex(deployer.address, 0)).to.equal(tokenId)
   })
 
-  it('should create a collectible', async () => {
-    let tokenId = await nftSimple.tokenCounter()
+  it('should create collectibles', async () => {
+    let tokenId
     let tokenURI = 'www.world.com'
     let randNum = 5 // % 3 should return a Breed of 2, SHIBA_INU
     let requestId
-    let tx = await nftSimple.batchMint(deployer.address, tokenURI, 1, 123)
+    let tx = await nftSimple.createCollectibles(3, tokenURI, 123)
     let request  = await tx.wait().then((transaction) => {
       requestId = transaction.events[3].args.requestId
     })
 
-    // Test the result of the random number request
+     // Test the result of the random number request
     await vrfCoordinatorMock.callBackWithRandomness(requestId, randNum, nftSimple.address)
-
+    tokenId = await nftSimple.requestIdToTokenId(requestId)
+    // last emitted event
     let sender = await nftSimple.requestIdTransaction(requestId)
        expect(sender[0]).to.equal(deployer.address)
        expect(sender[1]).to.equal(tokenURI)
        expect(sender[2]).to.equal(tokenId)
        expect(sender[3]).to.equal(2) // randNum % 3
-
-    // confirm NFT contract is up to date
-    nftNum = (await nftSimple.balanceOf(deployer.address)).toNumber()
-    expect(nftNum).to.equal(11)
-    id = await nftSimple.tokenByIndex(10)
-
+       //confirm NFT contract is up to date
+      nftNum = (await nftSimple.balanceOf(deployer.address)).toNumber()
+      expect(nftNum).to.equal(14)
   })
 })
