@@ -17,7 +17,7 @@ const NFTSimple=JSON.parse(fs.readFileSync('deployments/rinkeby/NFTSimple.json',
 const LinkToken=JSON.parse(fs.readFileSync('deployments/rinkeby/LinkToken.json', 'utf8'));
 const Linkaddress = '0x01be23585060835e02b77ef475b0cc51aa1e0709'
 
-let nftSimple, linkToken, deployer, tokenURI
+let nftSimple, linkToken, deployer, tokenURI, tokenId, nftTotalSupply
 
 describe('deployments', async () => {
 
@@ -25,7 +25,7 @@ describe('deployments', async () => {
   const accounts = await hre.ethers.getSigners()
   const [deployer, receiver ] = accounts
   const amount = '2000000000000000000';// if this is a string it will overflow
-  const tokenURI = "www.www.com"
+  let tokenURI = "www.www.com"
 
   it('deploy contracts', async () => {
 
@@ -41,40 +41,71 @@ describe('deployments', async () => {
     console.log("Amount of LINK tokens in the contract:", ethers.utils.formatEther(balance));
   })
 
-  it('should create a batch of collectibles', async () => {
-    let seed = await nftSimple.tokenCounter()
+  it('should create a collectible batch', async () => {
+    let seed = 111
     seed=seed++ // For userseed
     let requestId
 
-    //let tx = await nftSimple.batchMint(deployer.address, 3, tokenURI, seed)
-    // let tx = await nftSimple.createCollectibles(1, tokenURI, seed)
-    // let request  = await tx.wait().then((transaction) => {
-    // })
+    let tx = await nftSimple.createCollectibles(0, tokenURI, seed, { from : deployer.address})
+    let request  = await tx.wait().then((transaction) => {
+      console.log(transaction)
+    })
+
+    // update total NFT supply
+    nftTotalSupply = await nftSimple.totalSupply()
+    nftTotalSupply = nftTotalSupply++;
 
     let eventFilter = nftSimple.filters.RequestCollectible()
     let events = await nftSimple.queryFilter(eventFilter)
-    console.log(events)
 
-    for(let i = 0; i <= events.length - 1; i++) {
-      //requestId = events.args[0].requestId
-      requestId = events[i].args.requestId
-      let tokenId = await nftSimple.requestIdToTokenId(requestId)
-      console.log('tokenId', tokenId.toString())
+    // confirm tokenIds and random numbers
+    for(let i = 0; i <= nftTotalSupply - 1; i++){
+
+      tokenId = await nftSimple.tokenByIndex(i)
+      let sender = await nftSimple.getTransactionFromIndex(i)
+      tokenURI = await nftSimple.tokenURI(tokenId)
+
+      expect(sender[0]).to.equal(tokenId)
+      expect(sender[1]).to.be.lessThan(3) // Breed, randNum % 3
+      expect(sender[2]).to.equal(tokenURI)
+      expect(sender[3]).to.equal(deployer.address) // Breed, randNum % 3
     }
+      //confirm NFT contract is up to date
+      nftNum = (await nftSimple.balanceOf(deployer.address)).toNumber()
+      expect(nftNum).to.equal(nftTotalSupply)
+  })
 
-    
+  it('should create a collectible batch from another account', async () => {
+    let seed = 111
+    seed=seed++ // For userseed
+    let requestId
 
-    // // Test the result of the random number request
-    // let sender = await nftSimple.requestIdTransaction(requestId)
-    //    expect(sender[0]).to.equal(deployer.address)
-    //    expect(sender[1]).to.equal(tokenURI)
-    //    expect(sender[2]).to.equal(tokenId.toString())
-    //    expect(sender[3]).to.be.lessThan(3) // Returned randomness
-    //    console.log(sender)
-    //    console.log('requestID', requestId)
+    let tx = await nftSimple.connect(receiver).createCollectibles(0, tokenURI, seed)
+    let request  = await tx.wait().then((transaction) => {
+    })
+    //await token.connect(signers[1]).mint(signers[0].address, 1001);
+    // update total NFT supply
+    nftTotalSupply = await nftSimple.totalSupply()
+    nftTotalSupply = nftTotalSupply++;
 
+    let eventFilter = nftSimple.filters.RequestCollectible()
+    let events = await nftSimple.queryFilter(eventFilter)
 
-    // // confirm NFT contract is up to date
+    // confirm tokenIds and random numbers
+    for(let i = 0; i <= nftTotalSupply - 1; i++){
+
+      tokenId = await nftSimple.tokenByIndex(i)
+      let sender = await nftSimple.getTransactionFromIndex(i)
+      tokenURI = await nftSimple.tokenURI(tokenId)
+
+      expect(sender[0]).to.equal(tokenId)
+      expect(sender[1]).to.be.lessThan(3) // Breed, randNum % 3
+      expect(sender[2]).to.equal(tokenURI)
+      expect(sender[3]).to.equal(deployer.address) // Breed, randNum % 3
+    }
+      //confirm NFT contract is up to date
+      nftNum = (await nftSimple.balanceOf(deployer.address)).toNumber()
+      expect(nftNum).to.equal(nftTotalSupply)
   })
 })
 

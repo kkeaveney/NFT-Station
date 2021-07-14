@@ -6,18 +6,20 @@ import "hardhat/console.sol";
 
 contract NFTSimple is VRFConsumerBase, ERC721 {
 
-    uint256 numOfCollectibles;
-    uint256 public tokenCounter;
+    uint256 internal index;
+    uint256 internal numOfCollectibles;
     bytes32 internal keyHash;
     uint256 internal fee;
 
 
+
     enum Breed{PUG, SHIB_INU, ST_BERNARD}
 
-    mapping(bytes32 => address) public requestIdToSender;
-    mapping(bytes32 => string) public requestIdToTokenURI;
+    mapping(uint256 => address) public tokenIdToSender;
+    mapping(uint256 => string) public indexToTokenURI;
     mapping(uint256 => Breed) public tokenIdToBreed;
-    mapping(bytes32 => uint256) public requestIdToTokenId;
+    mapping(bytes32 => string) public requestIdToTokenURI;
+    mapping(bytes32 => address) public requestIdToSender;
 
     event RequestCollectible(bytes32 requestId);
 
@@ -39,19 +41,7 @@ contract NFTSimple is VRFConsumerBase, ERC721 {
     {
         keyHash = _keyHash;
         fee = _fee;
-        tokenCounter = 0;
-    }
-
-     // mint a batch of x tokens.
-    function batchMint(address to, uint256 number, string memory tokenURI,uint256 userProvidedSeed)
-    public {
-        bytes32 previousBlockHash = blockhash(block.number-1);
-        uint256 startId = uint256(keccak256(abi.encodePacked(previousBlockHash,msg.sender)));
-
-        for(uint256 i=0;i<number;i++){
-            _safeMint(to,startId+i);
-            _setTokenURI(startId+i, tokenURI);
-        }
+        index = 0;
     }
 
     function _safeTransferFrom(address from, address to, uint256 tokenId, bytes memory data) public {
@@ -63,8 +53,8 @@ contract NFTSimple is VRFConsumerBase, ERC721 {
      */
     function createCollectibles(uint256 amount, string memory tokenURI, uint256 userProvidedSeed) public returns (bytes32 requestId) {
         requestId = requestRandomness(keyHash, fee, userProvidedSeed);
-        requestIdToSender[requestId] = msg.sender;
         requestIdToTokenURI[requestId] = tokenURI;
+        requestIdToSender[requestId] = msg.sender;
         numOfCollectibles = amount;
         emit RequestCollectible(requestId);
     }
@@ -73,19 +63,22 @@ contract NFTSimple is VRFConsumerBase, ERC721 {
      * Callback function used by VRF Coordinator
      */
     function fulfillRandomness(bytes32 requestId, uint256 randomness) internal override {
-        address dogOwner = requestIdToSender[requestId];
-        string memory tokenURI = requestIdToTokenURI[requestId];
 
         for(uint256 i = 0; i <= numOfCollectibles; i++) {
-            //bytes32 previousBlockHash = blockhash(block.number-1);
-            uint256 newItemId = uint256(keccak256(abi.encodePacked(randomness, i)));
 
-            _safeMint(dogOwner, newItemId);
+            uint256 newItemId = uint256(keccak256(abi.encodePacked(randomness, i)));
+            string memory tokenURI = requestIdToTokenURI[requestId];
+            address owner = requestIdToSender[requestId];
+
+            tokenIdToSender[newItemId] = owner;
+            requestIdToSender[requestId] = owner;
+
+            _safeMint(owner, newItemId);
             _setTokenURI(newItemId, tokenURI);
 
             Breed breed = Breed(randomness % 3);
             tokenIdToBreed[newItemId] = breed;
-            requestIdToTokenId[requestId] = newItemId;
+            index++;
         }
 
         numOfCollectibles = 0;
@@ -100,12 +93,12 @@ contract NFTSimple is VRFConsumerBase, ERC721 {
     }
 
 
-    function requestIdTransaction(bytes32 requestId) public view returns(address, string memory, uint256, Breed ){
-        address owner = requestIdToSender[requestId];
-        string memory tokenURI = requestIdToTokenURI[requestId];
-        uint256 tokenId = requestIdToTokenId[requestId];
+    function getTransactionFromIndex(uint256 _index) public view returns(uint256, Breed, string memory, address ){
+        uint256 tokenId = tokenByIndex(_index);
         Breed breed = Breed(tokenIdToBreed[tokenId]);
-        return (owner, tokenURI, tokenId, breed);
+        string memory tokenURI = tokenURI(tokenId);
+        address owner = tokenIdToSender[tokenId];
+        return (tokenId, breed, tokenURI, owner);
     }
     /**
      * Withdraw LINK from this contract
