@@ -38,7 +38,7 @@ describe('deployments', async () => {
   })
 
   it('should create collectibles, with unique tokenIds', async () => {
-    let nfts = 10
+    let nfts = 5
     let = 123
     let randNum = 5 // % 3 should return a Breed of 2, SHIBA_INU
     let tx = await nftSimple.createCollectibles(nfts, tokenURI, seed)
@@ -56,11 +56,11 @@ describe('deployments', async () => {
     for(let i = 0; i <= nftTotalSupply - 1; i++){
       tokenId = await nftSimple.tokenByIndex(i)
       let sender = await nftSimple.getTransactionFromIndex(i)
-      let owner = await nftSimple.ownerOf(tokenId)
 
-      expect(owner).to.equal(deployer.address)
       expect(sender[0]).to.equal(tokenId)
       expect(sender[1]).to.equal(2) // Breed, randNum % 3
+      expect(sender[2]).to.equal(tokenURI) // Breed, randNum % 3
+      expect(sender[3]).to.equal(deployer.address) // Breed, randNum % 3
     }
       //confirm NFT contract is up to date
       nftNum = (await nftSimple.balanceOf(deployer.address)).toNumber()
