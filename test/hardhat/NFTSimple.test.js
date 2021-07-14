@@ -7,7 +7,7 @@ const hre = require("hardhat");
 const { expect } = require('chai');
 
 
-let nftSimple, vrfCoordinatorMock, accounts, deployer, tokenURI
+let nftSimple, vrfCoordinatorMock, accounts, deployer, tokenURI, nftTotalSupply, tokenId, requestId
 
 describe('deployments', async () => {
 
@@ -27,10 +27,6 @@ describe('deployments', async () => {
       accounts = await hre.ethers.getSigners();
       deployer = accounts[0];
       receiver = accounts[1];
-
-      console.log("Link",link.address);
-      console.log("NFTSimple", nftSimple.address);
-      console.log("VRF", vrfCoordinatorMock.address);
   })
 
   it('should send link to the deployed contract', async () => {
@@ -41,38 +37,33 @@ describe('deployments', async () => {
       console.log("Amount of LINK tokens in the contract:", ethers.utils.formatEther(balance));
   })
 
-   it('should batch mint from 0 to 9, check balances', async () => {
-    await nftSimple.batchMint(deployer.address, 10, tokenURI, 123)
-    let nftNum = (await nftSimple.balanceOf(deployer.address)).toNumber()
-    expect(nftNum).to.equal(10)
-    nftNum = (await nftSimple.balanceOf(receiver.address)).toNumber()
-    expect(nftNum).to.equal(0)
-    // confirm tokenId owner
-    let tokenId = await nftSimple.tokenByIndex(0)
-    expect (await nftSimple.tokenOfOwnerByIndex(deployer.address, 0)).to.equal(tokenId)
-  })
-
-  it('should create collectibles', async () => {
-    let tokenId
-    let tokenURI = 'www.world.com'
+  it('should create collectibles, with unique tokenIds', async () => {
+    let nfts = 10
+    let = 123
     let randNum = 5 // % 3 should return a Breed of 2, SHIBA_INU
-    let requestId
-    let tx = await nftSimple.createCollectibles(3, tokenURI, 123)
+    let tx = await nftSimple.createCollectibles(nfts, tokenURI, seed)
     let request  = await tx.wait().then((transaction) => {
       requestId = transaction.events[3].args.requestId
     })
-
-     // Test the result of the random number request
+    // Test the result of the random number request
     await vrfCoordinatorMock.callBackWithRandomness(requestId, randNum, nftSimple.address)
-    tokenId = await nftSimple.requestIdToTokenId(requestId)
-    // last emitted event
-    let sender = await nftSimple.requestIdTransaction(requestId)
-       expect(sender[0]).to.equal(deployer.address)
-       expect(sender[1]).to.equal(tokenURI)
-       expect(sender[2]).to.equal(tokenId)
-       expect(sender[3]).to.equal(2) // randNum % 3
-       //confirm NFT contract is up to date
+
+    // update total NFT supply
+    nftTotalSupply = await nftSimple.totalSupply()
+    nftTotalSupply = nftTotalSupply++;
+
+    // confirm tokenIds and random numbers
+    for(let i = 0; i <= nftTotalSupply - 1; i++){
+      tokenId = await nftSimple.tokenByIndex(i)
+      let sender = await nftSimple.getTransactionFromIndex(i)
+      let owner = await nftSimple.ownerOf(tokenId)
+
+      expect(owner).to.equal(deployer.address)
+      expect(sender[0]).to.equal(tokenId)
+      expect(sender[1]).to.equal(2) // Breed, randNum % 3
+    }
+      //confirm NFT contract is up to date
       nftNum = (await nftSimple.balanceOf(deployer.address)).toNumber()
-      expect(nftNum).to.equal(14)
+      expect(nftNum).to.equal(nftTotalSupply)
   })
 })
