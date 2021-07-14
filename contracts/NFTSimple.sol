@@ -7,7 +7,6 @@ import "hardhat/console.sol";
 contract NFTSimple is VRFConsumerBase, ERC721 {
 
     uint256 internal numOfCollectibles;
-    uint256 public tokenCounter;
     bytes32 internal keyHash;
     uint256 internal fee;
 
@@ -38,7 +37,6 @@ contract NFTSimple is VRFConsumerBase, ERC721 {
     {
         keyHash = _keyHash;
         fee = _fee;
-        tokenCounter = 0;
     }
 
     function _safeTransferFrom(address from, address to, uint256 tokenId, bytes memory data) public {
