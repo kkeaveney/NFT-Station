@@ -33,22 +33,50 @@ describe('deployments', async () => {
     nftSimple = new ethers.Contract(NFTSimple.address, NFTSimple.abi, deployer)
   })
 
-  // it('should send link to the deployed contract', async () => {
-  //   let tx = await linkToken.transfer(nftSimple.address, amount)
-  //   let result = tx.wait()
-  //   let balance = await linkToken.balanceOf(nftSimple.address)
-  //   expect(balance).to.not.equal(0)
-  //   console.log("Amount of LINK tokens in the contract:", ethers.utils.formatEther(balance));
-  // })
+  it('should send link to the deployed contract', async () => {
+    let tx = await linkToken.transfer(nftSimple.address, amount)
+    let result = tx.wait()
+    let balance = await linkToken.balanceOf(nftSimple.address)
+    expect(balance).to.not.equal(0)
+    console.log("Amount of LINK tokens in the contract:", ethers.utils.formatEther(balance));
+  })
 
-  it('should create a single collectibles', async () => {
+  it('should mint a single collectible', async () => {
     let seed = await nftSimple.tokenCounter()
     seed=seed++ // For userseed
     let requestId
 
-    // let tx = await nftSimple.createCollectibles(tokenURI, seed)
-    // let request  = await tx.wait().then((transaction) => {
-    // })
+    let tx = await nftSimple.createCollectibles(tokenURI, seed)
+    let request  = await tx.wait().then((transaction) => {
+    })
+
+    let eventFilter = nftSimple.filters.RequestCollectible()
+    let events = await nftSimple.queryFilter(eventFilter)
+
+    for(let i = 0; i <= events.length - 1; i++) {
+      requestId = events[i].args.requestId
+      let tokenId = await nftSimple.requestIdToTokenId(requestId)
+      let owner = await nftSimple.ownerOf(tokenId)
+
+      // Test the result of the random number request
+      // This may fail if the random result hasn't been returned yet
+
+      let tx = await nftSimple.requestIdTransaction(requestId)
+      expect(tx[0]).to.equal(owner)
+      expect(tx[1]).to.equal(tokenURI)
+      expect(tx[2]).to.equal(tokenId.toString() || 0) // 0 is in case the latest random request hasn't been returned
+      expect(tx[3]).to.be.lessThan(3) // Returned randomness
+    }
+  })
+
+  it('should mint a single collectible to another address', async () => {
+    let seed = await nftSimple.tokenCounter()
+    seed=seed++ // For userseed
+    let requestId
+
+    let tx = await nftSimple.createCollectibles(tokenURI, seed)
+    let request  = await tx.wait().then((transaction) => {
+    })
 
     let eventFilter = nftSimple.filters.RequestCollectible()
     let events = await nftSimple.queryFilter(eventFilter)
@@ -62,7 +90,7 @@ describe('deployments', async () => {
       let tx = await nftSimple.requestIdTransaction(requestId)
       expect(tx[0]).to.equal(owner)
       expect(tx[1]).to.equal(tokenURI)
-      expect(tx[2]).to.equal(tokenId.toString())
+      expect(tx[2]).to.equal(tokenId.toString() || 0) // 0 is in case the latest random request hasn't been returned
       expect(tx[3]).to.be.lessThan(3) // Returned randomness
     }
   })

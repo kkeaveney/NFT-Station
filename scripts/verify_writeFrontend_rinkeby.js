@@ -57,12 +57,6 @@ async function main() {
         constructorArguments: [vrfCoordinatorAddress, linkTokenAddress, keyHash, fee],
     })
 
-    // await hre.run("verify:verify" , {
-    //     address: randomNumberConsumer.address,
-    //     constructorArguments: [vrfCoordinatorAddress, linkTokenAddress, keyHash, fee]
-    // })
-
-
     // Fund with LINK
     const amount = web3.utils.toHex(1e18)
     let tx = await linkTokenContract.transfer(nftSimple.address, amount)
