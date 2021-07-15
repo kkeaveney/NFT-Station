@@ -41,15 +41,14 @@ describe('deployments', async () => {
     console.log("Amount of LINK tokens in the contract:", ethers.utils.formatEther(balance));
   })
 
-  it('should create a batch of collectibles', async () => {
+  it('should create a single collectibles', async () => {
     let seed = await nftSimple.tokenCounter()
     seed=seed++ // For userseed
     let requestId
 
-    //let tx = await nftSimple.batchMint(deployer.address, 3, tokenURI, seed)
-    // let tx = await nftSimple.createCollectibles(1, tokenURI, seed)
-    // let request  = await tx.wait().then((transaction) => {
-    // })
+    let tx = await nftSimple.createCollectibles(1, tokenURI, seed)
+    let request  = await tx.wait().then((transaction) => {
+    })
 
     let eventFilter = nftSimple.filters.RequestCollectible()
     let events = await nftSimple.queryFilter(eventFilter)
@@ -62,7 +61,6 @@ describe('deployments', async () => {
       console.log('tokenId', tokenId.toString())
     }
 
-    
 
     // // Test the result of the random number request
     // let sender = await nftSimple.requestIdTransaction(requestId)
