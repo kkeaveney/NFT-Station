@@ -105,5 +105,66 @@ async function checkWinLoseEvent(isWin, requestId, randomNumber) {
         expect(owner_1).to.equal(alice.address)
         expect(owner_2).to.equal(alice.address)
         expect(owner_3).to.equal(alice.address)
-
     })
+
+    it('should lose', async () => {
+        let tx = await nftBase._safeTransferFrom(alice.address, fightTwice.address, 1, 123) // tokenId = 1
+        receipt = await tx.wait()
+        requestId = receipt.events[5].data.substring(0,66)
+
+        await vrfCoordinatorMock.callBackWithRandomness(requestId, RANDOM_NUMBER_VRF_LOSE, fightTwice.address)
+        randomNumber = await fightTwice.requestIdToRandomNumber(requestId)
+        expect(randomNumber).to.equal(RANDOM_NUMBER_VRF_LOSE)
+        await checkWinLoseEvent(false, requestId, RANDOM_NUMBER_VRF_LOSE) // win as there is an NFT in the contract
+        arrLength = await fightTwice.NFTsLen()
+        expect(arrLength).to.equal(2)
+
+        nftNum = (await nftBase.balanceOf(alice.address)).toNumber()
+        expect(nftNum).to.equal(12)
+
+        nftNum = (await nftBase.balanceOf(fightTwice.address)).toNumber()
+        expect(nftNum).to.equal(2)
+    })
+
+    it('checks all owners', async () => {
+        let owner_0 = await nftBase.ownerOf(0)
+        let owner_1 = await nftBase.ownerOf(1)
+        let owner_2 = await nftBase.ownerOf(2)
+        let owner_3 = await nftBase.ownerOf(3)
+
+        expect(owner_0).to.equal(fightTwice.address)
+        expect(owner_1).to.equal(fightTwice.address)
+        expect(owner_2).to.equal(alice.address)
+        expect(owner_3).to.equal(alice.address)
+    })
+
+    it('should win', async () => {
+        let tx = await nftBase._safeTransferFrom(alice.address, fightTwice.address, 3, 123)
+        receipt = await tx.wait()
+        requestId = receipt.events[5].data.substring(0, 66)
+        await vrfCoordinatorMock.callBackWithRandomness(requestId, RANDOM_NUMBER_VRF_WIN, fightTwice.address)
+        randomNumber = await fightTwice.requestIdToRandomNumber(requestId)
+        expect(randomNumber).to.equal(RANDOM_NUMBER_VRF_WIN)
+        await checkWinLoseEvent(true, requestId, RANDOM_NUMBER_VRF_WIN) // win as there is an NFT in the contract
+        arrLength = await fightTwice.NFTsLen()
+        expect(arrLength).to.equal(1)
+
+        nftNum = (await nftBase.balanceOf(alice.address)).toNumber()
+        expect(nftNum).to.equal(13)
+
+        nftNum = (await nftBase.balanceOf(fightTwice.address)).toNumber()
+        expect(nftNum).to.equal(1)
+    })
+
+    it('checks owners', async () => {
+        let owner_0 = await nftBase.ownerOf(0)
+        let owner_1 = await nftBase.ownerOf(1)
+        let owner_2 = await nftBase.ownerOf(2)
+        let owner_3 = await nftBase.ownerOf(3)
+
+        expect(owner_0).to.equal(fightTwice.address)
+        expect(owner_1).to.equal(alice.address)
+        expect(owner_2).to.equal(alice.address)
+        expect(owner_3).to.equal(alice.address)
+    })
+
