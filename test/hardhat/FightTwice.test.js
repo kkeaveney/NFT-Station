@@ -48,10 +48,10 @@ async function checkWinLoseEvent(isWin, requestId, randomNumber) {
     })
 
     it('should mint NFT', async () => {
-        await nftBase.mint(alice.address, 0);
-        await nftBase.mint(alice.address, 1);
-        await nftBase.mint(alice.address, 2);
-        await nftBase.mint(alice.address, 3);
+        await nftBase.mint(alice.address, 0); // tokenId = 0
+        await nftBase.mint(alice.address, 1); // tokenId = 1
+        await nftBase.mint(alice.address, 2); // tokenId = 2
+        await nftBase.mint(alice.address, 3); // tokenId = 3
 
         let nftNum = (await nftBase.balanceOf(alice.address)).toNumber()
         expect(nftNum).to.equal(4)
@@ -107,8 +107,31 @@ async function checkWinLoseEvent(isWin, requestId, randomNumber) {
         expect(owner_3).to.equal(alice.address)
     })
 
-    it('should lose', async () => {
+    it('should win', async () => {
+
+        // let tx0 = await nftSimple.transferFrom(alice.address, neverFightTwice.address, 0) // tokenId = 0
         let tx = await nftBase._safeTransferFrom(alice.address, fightTwice.address, 1, 123) // tokenId = 1
+        receipt = await tx.wait()
+        requestId = receipt.events[5].data.substring(0,66)
+
+        await vrfCoordinatorMock.callBackWithRandomness(requestId, RANDOM_NUMBER_VRF_WIN, fightTwice.address)
+        randomNumber = await fightTwice.requestIdToRandomNumber(requestId)
+        expect(randomNumber).to.equal(RANDOM_NUMBER_VRF_WIN)
+        await checkWinLoseEvent(true, requestId, RANDOM_NUMBER_VRF_WIN) // win cause there is NFT in the contract
+        arrLength = await fightTwice.NFTsLen()
+        expect(arrLength).to.equal(0)
+
+        nftNum = (await nftBase.balanceOf(alice.address)).toNumber()
+        console.log("balance Alice",nftNum)
+        expect(nftNum).to.equal(14)
+
+        nftNum = (await nftBase.balanceOf(fightTwice.address)).toNumber()
+        console.log("balance N.F.T", nftNum)
+        expect(nftNum).to.equal(0)
+    })
+
+    it('should lose as there are no NFTs in contract', async () => {
+        let tx = await nftBase._safeTransferFrom(alice.address, fightTwice.address, 2, 123) // tokenId = 1
         receipt = await tx.wait()
         requestId = receipt.events[5].data.substring(0,66)
 
@@ -117,13 +140,13 @@ async function checkWinLoseEvent(isWin, requestId, randomNumber) {
         expect(randomNumber).to.equal(RANDOM_NUMBER_VRF_LOSE)
         await checkWinLoseEvent(false, requestId, RANDOM_NUMBER_VRF_LOSE) // win as there is an NFT in the contract
         arrLength = await fightTwice.NFTsLen()
-        expect(arrLength).to.equal(2)
+        expect(arrLength).to.equal(1)
 
         nftNum = (await nftBase.balanceOf(alice.address)).toNumber()
-        expect(nftNum).to.equal(12)
+        expect(nftNum).to.equal(13)
 
         nftNum = (await nftBase.balanceOf(fightTwice.address)).toNumber()
-        expect(nftNum).to.equal(2)
+        expect(nftNum).to.equal(1)
     })
 
     it('checks all owners', async () => {
@@ -132,14 +155,48 @@ async function checkWinLoseEvent(isWin, requestId, randomNumber) {
         let owner_2 = await nftBase.ownerOf(2)
         let owner_3 = await nftBase.ownerOf(3)
 
-        expect(owner_0).to.equal(fightTwice.address)
-        expect(owner_1).to.equal(fightTwice.address)
-        expect(owner_2).to.equal(alice.address)
+        expect(owner_0).to.equal(alice.address)
+        expect(owner_1).to.equal(alice.address)
+        expect(owner_2).to.equal(fightTwice.address)
         expect(owner_3).to.equal(alice.address)
     })
 
+    it('should lose', async () => {
+        let tx = await nftBase._safeTransferFrom(alice.address, fightTwice.address, 3, 123) // tokenId = 3
+        receipt = await tx.wait()
+        requestId = receipt.events[5].data.substring(0,66)
+
+        await vrfCoordinatorMock.callBackWithRandomness(requestId, RANDOM_NUMBER_VRF_LOSE, fightTwice.address)
+        randomNumber = await fightTwice.requestIdToRandomNumber(requestId)
+        expect(randomNumber).to.equal(RANDOM_NUMBER_VRF_LOSE)
+        await checkWinLoseEvent(false, requestId, RANDOM_NUMBER_VRF_LOSE) 
+        arrLength = await fightTwice.NFTsLen()
+        expect(arrLength).to.equal(2)
+
+        nftNum = (await nftBase.balanceOf(alice.address)).toNumber()
+        console.log("balance Alice",nftNum)
+        expect(nftNum).to.equal(12)
+
+        nftNum = (await nftBase.balanceOf(fightTwice.address)).toNumber()
+        console.log("balance N.F.T", nftNum)
+        expect(nftNum).to.equal(2)
+
+    })
+
+    it('checks owners', async () => {
+        let owner_0 = await nftBase.ownerOf(0)
+        let owner_1 = await nftBase.ownerOf(1)
+        let owner_2 = await nftBase.ownerOf(2)
+        let owner_3 = await nftBase.ownerOf(3)
+
+        expect(owner_0).to.equal(alice.address)
+        expect(owner_1).to.equal(alice.address)
+        expect(owner_2).to.equal(fightTwice.address)
+        expect(owner_3).to.equal(fightTwice.address)
+    })
+
     it('should win', async () => {
-        let tx = await nftBase._safeTransferFrom(alice.address, fightTwice.address, 3, 123)
+        let tx = await nftBase._safeTransferFrom(alice.address, fightTwice.address, 1, 123)
         receipt = await tx.wait()
         requestId = receipt.events[5].data.substring(0, 66)
         await vrfCoordinatorMock.callBackWithRandomness(requestId, RANDOM_NUMBER_VRF_WIN, fightTwice.address)
@@ -162,9 +219,87 @@ async function checkWinLoseEvent(isWin, requestId, randomNumber) {
         let owner_2 = await nftBase.ownerOf(2)
         let owner_3 = await nftBase.ownerOf(3)
 
-        expect(owner_0).to.equal(fightTwice.address)
+        expect(owner_0).to.equal(alice.address)
         expect(owner_1).to.equal(alice.address)
         expect(owner_2).to.equal(alice.address)
-        expect(owner_3).to.equal(alice.address)
+        expect(owner_3).to.equal(fightTwice.address)
+    })
+
+    it('should lose', async () => {
+        let tx = await nftBase._safeTransferFrom(alice.address, fightTwice.address, 1, 123) // toknId = 1
+        receipt = await tx.wait()
+        requestId = receipt.events[5].data.substring(0,66)
+        await vrfCoordinatorMock.callBackWithRandomness(requestId, RANDOM_NUMBER_VRF_LOSE, fightTwice.address)
+        randomNumber = await fightTwice.requestIdToRandomNumber(requestId)
+        expect(randomNumber).to.equal(RANDOM_NUMBER_VRF_LOSE)
+        await checkWinLoseEvent(false, requestId, RANDOM_NUMBER_VRF_LOSE)
+        arrLength = await fightTwice.NFTsLen()
+        expect(arrLength).to.equal(2)
+
+        nftNum = (await nftBase.balanceOf(alice.address)).toNumber()
+        expect(nftNum).to.equal(12)
+
+        nftNum = (await nftBase.balanceOf(fightTwice.address)).toNumber()
+        expect(nftNum).to.equal(2)
+    })
+
+    it('checks owners', async () => {
+        let owner_0 = await nftBase.ownerOf(0)
+        let owner_1 = await nftBase.ownerOf(1)
+        let owner_2 = await nftBase.ownerOf(2)
+        let owner_3 = await nftBase.ownerOf(3)
+
+        expect(owner_0).to.equal(alice.address)
+        expect(owner_1).to.equal(fightTwice.address)
+        expect(owner_2).to.equal(alice.address)
+        expect(owner_3).to.equal(fightTwice.address)
+    })
+
+    it('should lose', async () => {
+        let tx = await nftBase._safeTransferFrom(alice.address, fightTwice.address, 2, 123 )
+        receipt = await tx.wait()
+        requestId = receipt.events[5].data.substring(0,66)
+        await vrfCoordinatorMock.callBackWithRandomness(requestId, RANDOM_NUMBER_VRF_LOSE, fightTwice.address)
+        randomNumber = await fightTwice.requestIdToRandomNumber(requestId)
+        expect(randomNumber).to.equal(RANDOM_NUMBER_VRF_LOSE)
+        await checkWinLoseEvent(false, requestId, RANDOM_NUMBER_VRF_LOSE)
+        arrLength = await fightTwice.NFTsLen()
+        expect(arrLength).to.equal(3)
+
+        nftNum = (await nftBase.balanceOf(alice.address)).toNumber()
+        expect(nftNum).to.equal(11)
+
+        nftNum = (await nftBase.balanceOf(fightTwice.address)).toNumber()
+        expect(nftNum).to.equal(3)
+    })
+
+    it('checks owners', async () => {
+        let owner_0 = await nftBase.ownerOf(0)
+        let owner_1 = await nftBase.ownerOf(1)
+        let owner_2 = await nftBase.ownerOf(2)
+        let owner_3 = await nftBase.ownerOf(3)
+
+        expect(owner_0).to.equal(alice.address)
+        expect(owner_1).to.equal(fightTwice.address)
+        expect(owner_2).to.equal(fightTwice.address)
+        expect(owner_3).to.equal(fightTwice.address)
+    })
+
+    it('should lose', async () => {
+        let tx = await nftBase._safeTransferFrom(alice.address, fightTwice.address, 0, 123 )
+        receipt = await tx.wait()
+        requestId = receipt.events[5].data.substring(0,66)
+        await vrfCoordinatorMock.callBackWithRandomness(requestId, RANDOM_NUMBER_VRF_LOSE, fightTwice.address)
+        randomNumber = await fightTwice.requestIdToRandomNumber(requestId)
+        expect(randomNumber).to.equal(RANDOM_NUMBER_VRF_LOSE)
+        await checkWinLoseEvent(false, requestId, RANDOM_NUMBER_VRF_LOSE)
+        arrLength = await fightTwice.NFTsLen()
+        expect(arrLength).to.equal(4)
+
+        nftNum = (await nftBase.balanceOf(alice.address)).toNumber()
+        expect(nftNum).to.equal(10)
+
+        nftNum = (await nftBase.balanceOf(fightTwice.address)).toNumber()
+        expect(nftNum).to.equal(4)
     })
 
